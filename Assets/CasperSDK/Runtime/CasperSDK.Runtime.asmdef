@@ -1,0 +1,18 @@
+{
+    "name": "CasperSDK.Runtime",
+    "rootNamespace": "CasperSDK",
+    "references": [
+        "Newtonsoft.Json"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [
+        "Casper.Network.SDK.dll"
+    ],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
