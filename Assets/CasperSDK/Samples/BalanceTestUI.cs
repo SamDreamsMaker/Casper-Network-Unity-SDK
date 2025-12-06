@@ -1,5 +1,6 @@
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 using CasperSDK.Core;
 using CasperSDK.Core.Configuration;
 using System.Threading.Tasks;
@@ -12,10 +13,10 @@ namespace CasperSDK.Samples
     public class BalanceTestUI : MonoBehaviour
     {
         [Header("UI References")]
-        [SerializeField] private InputField accountAddressInput;
+        [SerializeField] private TMP_InputField accountAddressInput;
         [SerializeField] private Button getBalanceButton;
-        [SerializeField] private Text resultText;
-        [SerializeField] private Text statusText;
+        [SerializeField] private TMP_Text resultText;
+        [SerializeField] private TMP_Text statusText;
 
         [Header("SDK Configuration")]
         [SerializeField] private NetworkConfig networkConfig;
