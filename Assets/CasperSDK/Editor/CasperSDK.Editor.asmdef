@@ -2,7 +2,9 @@
     "name": "CasperSDK.Editor",
     "rootNamespace": "CasperSDK.Editor",
     "references": [
-        "CasperSDK.Runtime"
+        "CasperSDK.Runtime",
+        "Unity.TextMeshPro",
+        "Unity.TextMeshPro.Editor"
     ],
     "includePlatforms": [
         "Editor"
