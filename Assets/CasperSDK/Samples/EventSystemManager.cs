@@ -13,7 +13,7 @@ namespace CasperSDK.Samples
         private void Awake()
         {
             // Check if there's already an EventSystem in the scene
-            if (FindObjectOfType<EventSystem>() == null)
+            if (FindFirstObjectByType<EventSystem>() == null)
             {
                 // Create a new GameObject with EventSystem
                 GameObject eventSystemObj = new GameObject("EventSystem");

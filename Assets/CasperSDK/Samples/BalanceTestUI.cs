@@ -28,7 +28,7 @@ namespace CasperSDK.Samples
             Debug.Log("[BalanceTest] === START METHOD CALLED ===");
             
             // Ensure we have an EventSystem for UI interactions
-            var existingEventSystem = FindObjectOfType<UnityEngine.EventSystems.EventSystem>();
+            var existingEventSystem = FindFirstObjectByType<UnityEngine.EventSystems.EventSystem>();
             if (existingEventSystem == null)
             {
                 var eventSystemObj = new GameObject("EventSystem");
