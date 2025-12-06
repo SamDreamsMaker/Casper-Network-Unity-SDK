@@ -27,26 +27,6 @@ Voici un exemple d'adresse publique au format Casper (hex avec préfixe algorith
 ```
 0203a8eb50fc1d6e50cc02f96e7de5c0a29f7de2ec7093f4d73aab3dd2a35aff88a5
 ```
-
-> **Note** : Pour tester avec une adresse valide contenant des fonds :
-> - Visitez [cspr.live](https://testnet.cspr.live/)
-> - Créez un compte via le Casper Wallet
-> - Utilisez le faucet testnet pour obtenir des tokens de test
-
-## Fonctionnalités démontrées
-
-- ✅ Initialisation du SDK avec configuration testnet
-- ✅ Appel RPC `state_get_account_info` pour obtenir le purse URef
-- ✅ Appel RPC `state_get_balance` pour récupérer le solde
-- ✅ Gestion des erreurs et affichage des messages
-- ✅ Conversion automatique motes ↔ CSPR
-- ✅ Interface utilisateur simple et claire
-
-## Architecture
-
-Le test utilise les composants suivants du SDK :
-
-- **CasperSDKManager** : Point d'entrée singleton du SDK
 - **NetworkConfig** : Configuration testnet (créée automatiquement si absente)
 - **AccountService** : Service pour les opérations liées aux comptes
 - **JsonRpcClient** : Client HTTP pour les appels RPC
@@ -66,23 +46,6 @@ string balance = await accountService.GetBalanceAsync(publicKey);
 ```
 
 ## Troubleshooting
-
-### Le SDK ne s'initialise pas
-
-- Vérifiez que `TestnetConfig.asset` existe dans `Assets/CasperSDK/Resources/`
-- Le SDK créera automatiquement une configuration par défaut si le fichier est absent
-
-### Erreur de connexion réseau
-
-- Vérifiez votre connexion Internet
-- Le testnet Casper doit être accessible à l'adresse : `http://52.35.59.254:7777/rpc`
-- Vérifiez les logs Unity pour plus de détails
-
-### Adresse invalide
-
-- L'adresse doit être au format hexadécimal avec préfixe d'algorithme (ex: `01` pour ED25519, `02` pour SECP256K1)
-- L'adresse doit avoir une longueur valide (généralement 66 caractères)
-
 ## Prochaines étapes
 
 Pour aller plus loin avec le SDK :
