@@ -45,20 +45,20 @@ namespace CasperSDK.Tests.Unit
             // Arrange
             const string deployHash = "deploy-hash-abc123";
             
-            _mockClient.SetupResponse("info_get_deploy", new DeployResponse
+            _mockClient.SetupResponse("info_get_deploy", new TestDeployResponse
             {
                 api_version = "2.0.0",
-                deploy = new DeployData
+                deploy = new TestDeployData
                 {
                     hash = deployHash,
-                    header = new DeployHeader
+                    header = new TestDeployHeader
                     {
                         account = "01sender123",
                         timestamp = "2024-01-01T00:00:00Z",
                         chain_name = "casper-test"
                     }
                 },
-                execution_results = new ExecutionResultWrapper[0]
+                execution_results = new TestExecutionResultWrapper[0]
             });
 
             // Act
@@ -100,10 +100,10 @@ namespace CasperSDK.Tests.Unit
             // Arrange
             const string deployHash = "pending-deploy-hash";
             
-            _mockClient.SetupResponse("info_get_deploy", new DeployResponse
+            _mockClient.SetupResponse("info_get_deploy", new TestDeployResponse
             {
-                deploy = new DeployData { hash = deployHash },
-                execution_results = new ExecutionResultWrapper[0] // Empty = pending
+                deploy = new TestDeployData { hash = deployHash },
+                execution_results = new TestExecutionResultWrapper[0] // Empty = pending
             });
 
             // Act
@@ -120,17 +120,17 @@ namespace CasperSDK.Tests.Unit
             // Arrange
             const string deployHash = "success-deploy-hash";
             
-            _mockClient.SetupResponse("info_get_deploy", new DeployResponse
+            _mockClient.SetupResponse("info_get_deploy", new TestDeployResponse
             {
-                deploy = new DeployData { hash = deployHash },
+                deploy = new TestDeployData { hash = deployHash },
                 execution_results = new[]
                 {
-                    new ExecutionResultWrapper
+                    new TestExecutionResultWrapper
                     {
                         block_hash = "block-abc",
-                        result = new ExecutionResult
+                        result = new TestExecutionResult
                         {
-                            Success = new SuccessResult { cost = "1000000" }
+                            Success = new TestSuccessResult { cost = "1000000" }
                         }
                     }
                 }
@@ -152,17 +152,17 @@ namespace CasperSDK.Tests.Unit
             // Arrange
             const string deployHash = "failed-deploy-hash";
             
-            _mockClient.SetupResponse("info_get_deploy", new DeployResponse
+            _mockClient.SetupResponse("info_get_deploy", new TestDeployResponse
             {
-                deploy = new DeployData { hash = deployHash },
+                deploy = new TestDeployData { hash = deployHash },
                 execution_results = new[]
                 {
-                    new ExecutionResultWrapper
+                    new TestExecutionResultWrapper
                     {
                         block_hash = "block-xyz",
-                        result = new ExecutionResult
+                        result = new TestExecutionResult
                         {
-                            Failure = new FailureResult
+                            Failure = new TestFailureResult
                             {
                                 error_message = "Out of gas",
                                 cost = "500000"
@@ -205,7 +205,7 @@ namespace CasperSDK.Tests.Unit
             const string expectedHash = "submitted-deploy-hash";
             var mockDeploy = new { header = "test", session = "test" };
             
-            _mockClient.SetupResponse("account_put_deploy", new DeploySubmitResponse
+            _mockClient.SetupResponse("account_put_deploy", new TestDeploySubmitResponse
             {
                 api_version = "2.0.0",
                 deploy_hash = expectedHash

@@ -43,7 +43,7 @@ namespace CasperSDK.Tests.Unit
         public async Task GetStatusAsync_ReturnsNodeStatus()
         {
             // Arrange
-            _mockClient.SetupResponse("info_get_status", new StatusRpcResponse
+            _mockClient.SetupResponse("info_get_status", new TestStatusResponse
             {
                 api_version = "2.0.0",
                 chainspec_name = "casper-test",
@@ -52,10 +52,10 @@ namespace CasperSDK.Tests.Unit
                 uptime = "24h 30m",
                 peers = new[]
                 {
-                    new PeerInfo { node_id = "peer1", address = "192.168.1.1:35000" },
-                    new PeerInfo { node_id = "peer2", address = "192.168.1.2:35000" }
+                    new TestPeerInfo { node_id = "peer1", address = "192.168.1.1:35000" },
+                    new TestPeerInfo { node_id = "peer2", address = "192.168.1.2:35000" }
                 },
-                last_added_block_info = new BlockInfoResponse
+                last_added_block_info = new TestBlockInfo
                 {
                     hash = "block-hash-xyz",
                     height = 12345,
@@ -98,14 +98,14 @@ namespace CasperSDK.Tests.Unit
         public async Task GetPeersAsync_ReturnsPeerList()
         {
             // Arrange
-            _mockClient.SetupResponse("info_get_peers", new PeersResponse
+            _mockClient.SetupResponse("info_get_peers", new TestPeersResponse
             {
                 api_version = "2.0.0",
                 peers = new[]
                 {
-                    new PeerInfo { node_id = "tls:abc123", address = "10.0.0.1:35000" },
-                    new PeerInfo { node_id = "tls:def456", address = "10.0.0.2:35000" },
-                    new PeerInfo { node_id = "tls:ghi789", address = "10.0.0.3:35000" }
+                    new TestPeerInfo { node_id = "tls:abc123", address = "10.0.0.1:35000" },
+                    new TestPeerInfo { node_id = "tls:def456", address = "10.0.0.2:35000" },
+                    new TestPeerInfo { node_id = "tls:ghi789", address = "10.0.0.3:35000" }
                 }
             });
 
@@ -140,10 +140,10 @@ namespace CasperSDK.Tests.Unit
         public async Task GetChainspecAsync_ReturnsChainspec()
         {
             // Arrange
-            _mockClient.SetupResponse("info_get_chainspec", new ChainspecResponse
+            _mockClient.SetupResponse("info_get_chainspec", new TestChainspecResponse
             {
                 api_version = "2.0.0",
-                chainspec_bytes = new ChainspecBytesData
+                chainspec_bytes = new TestChainspecBytes
                 {
                     chainspec_bytes = "base64encodeddata..."
                 }

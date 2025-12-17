@@ -43,30 +43,30 @@ namespace CasperSDK.Tests.Unit
         public async Task GetAuctionInfoAsync_ReturnsAuctionInfo()
         {
             // Arrange
-            _mockClient.SetupResponse("state_get_auction_info", new AuctionInfoResponse
+            _mockClient.SetupResponse("state_get_auction_info", new TestAuctionInfoResponse
             {
                 api_version = "2.0.0",
-                auction_state = new AuctionState
+                auction_state = new TestAuctionState
                 {
                     state_root_hash = "state-root-xyz",
                     block_height = 12345,
                     era_validators = new[]
                     {
-                        new EraValidator
+                        new TestEraValidator
                         {
                             era_id = 100,
                             validator_weights = new[]
                             {
-                                new ValidatorWeight { public_key = "01validator1", weight = "1000000000" }
+                                new TestValidatorWeight { public_key = "01validator1", weight = "1000000000" }
                             }
                         }
                     },
                     bids = new[]
                     {
-                        new BidInfo
+                        new TestBidInfo
                         {
                             public_key = "01validator1",
-                            bid = new BidData
+                            bid = new TestBidData
                             {
                                 bonding_purse = "uref-purse123",
                                 staked_amount = "1000000000",
@@ -110,20 +110,20 @@ namespace CasperSDK.Tests.Unit
         public async Task GetValidatorsAsync_ReturnsValidatorList()
         {
             // Arrange
-            _mockClient.SetupResponse("state_get_auction_info", new AuctionInfoResponse
+            _mockClient.SetupResponse("state_get_auction_info", new TestAuctionInfoResponse
             {
-                auction_state = new AuctionState
+                auction_state = new TestAuctionState
                 {
                     era_validators = new[]
                     {
-                        new EraValidator
+                        new TestEraValidator
                         {
                             era_id = 100,
                             validator_weights = new[]
                             {
-                                new ValidatorWeight { public_key = "01validator1", weight = "1000000000" },
-                                new ValidatorWeight { public_key = "01validator2", weight = "2000000000" },
-                                new ValidatorWeight { public_key = "01validator3", weight = "3000000000" }
+                                new TestValidatorWeight { public_key = "01validator1", weight = "1000000000" },
+                                new TestValidatorWeight { public_key = "01validator2", weight = "2000000000" },
+                                new TestValidatorWeight { public_key = "01validator3", weight = "3000000000" }
                             }
                         }
                     }
@@ -144,11 +144,11 @@ namespace CasperSDK.Tests.Unit
         public async Task GetValidatorsAsync_EmptyEra_ReturnsEmptyArray()
         {
             // Arrange
-            _mockClient.SetupResponse("state_get_auction_info", new AuctionInfoResponse
+            _mockClient.SetupResponse("state_get_auction_info", new TestAuctionInfoResponse
             {
-                auction_state = new AuctionState
+                auction_state = new TestAuctionState
                 {
-                    era_validators = new EraValidator[0]
+                    era_validators = new TestEraValidator[0]
                 }
             });
 
@@ -170,16 +170,16 @@ namespace CasperSDK.Tests.Unit
             // Arrange
             const string publicKey = "01validator1";
             
-            _mockClient.SetupResponse("state_get_auction_info", new AuctionInfoResponse
+            _mockClient.SetupResponse("state_get_auction_info", new TestAuctionInfoResponse
             {
-                auction_state = new AuctionState
+                auction_state = new TestAuctionState
                 {
                     bids = new[]
                     {
-                        new BidInfo
+                        new TestBidInfo
                         {
                             public_key = publicKey,
-                            bid = new BidData
+                            bid = new TestBidData
                             {
                                 bonding_purse = "uref-purse123",
                                 staked_amount = "5000000000",
@@ -206,13 +206,13 @@ namespace CasperSDK.Tests.Unit
         public async Task GetValidatorByKeyAsync_InvalidKey_ReturnsNull()
         {
             // Arrange
-            _mockClient.SetupResponse("state_get_auction_info", new AuctionInfoResponse
+            _mockClient.SetupResponse("state_get_auction_info", new TestAuctionInfoResponse
             {
-                auction_state = new AuctionState
+                auction_state = new TestAuctionState
                 {
                     bids = new[]
                     {
-                        new BidInfo { public_key = "01othervalidator" }
+                        new TestBidInfo { public_key = "01othervalidator" }
                     }
                 }
             });

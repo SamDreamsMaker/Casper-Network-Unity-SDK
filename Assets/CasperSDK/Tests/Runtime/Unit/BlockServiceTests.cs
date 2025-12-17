@@ -43,20 +43,20 @@ namespace CasperSDK.Tests.Unit
         public async Task GetLatestBlockAsync_ReturnsBlock()
         {
             // Arrange
-            _mockClient.SetupResponse("chain_get_block", new BlockResponse
+            _mockClient.SetupResponse("chain_get_block", new TestBlockResponse
             {
                 api_version = "2.0.0",
-                block = new BlockData
+                block = new TestBlockData
                 {
                     hash = "block-hash-abc123",
-                    header = new BlockHeader
+                    header = new TestBlockHeader
                     {
                         height = 12345,
                         era_id = 100,
                         state_root_hash = "state-root-xyz",
                         timestamp = "2024-01-01T00:00:00Z"
                     },
-                    body = new BlockBody
+                    body = new TestBlockBody
                     {
                         proposer = "01proposer123"
                     }
@@ -96,12 +96,12 @@ namespace CasperSDK.Tests.Unit
             // Arrange
             const string blockHash = "abc123def456";
             
-            _mockClient.SetupResponse("chain_get_block", new BlockResponse
+            _mockClient.SetupResponse("chain_get_block", new TestBlockResponse
             {
-                block = new BlockData
+                block = new TestBlockData
                 {
                     hash = blockHash,
-                    header = new BlockHeader { height = 999 }
+                    header = new TestBlockHeader { height = 999 }
                 }
             });
 
@@ -137,12 +137,12 @@ namespace CasperSDK.Tests.Unit
             // Arrange
             const long height = 50000;
             
-            _mockClient.SetupResponse("chain_get_block", new BlockResponse
+            _mockClient.SetupResponse("chain_get_block", new TestBlockResponse
             {
-                block = new BlockData
+                block = new TestBlockData
                 {
                     hash = "block-at-height",
-                    header = new BlockHeader { height = height }
+                    header = new TestBlockHeader { height = height }
                 }
             });
 
@@ -164,7 +164,7 @@ namespace CasperSDK.Tests.Unit
             // Arrange
             const string expectedHash = "state-root-hash-xyz789";
             
-            _mockClient.SetupResponse("chain_get_state_root_hash", new StateRootHashResponse
+            _mockClient.SetupResponse("chain_get_state_root_hash", new TestStateRootHashResponse
             {
                 api_version = "2.0.0",
                 state_root_hash = expectedHash
@@ -186,7 +186,7 @@ namespace CasperSDK.Tests.Unit
             const long height = 1000;
             const string expectedHash = "state-root-at-height";
             
-            _mockClient.SetupResponse("chain_get_state_root_hash", new StateRootHashResponse
+            _mockClient.SetupResponse("chain_get_state_root_hash", new TestStateRootHashResponse
             {
                 state_root_hash = expectedHash
             });

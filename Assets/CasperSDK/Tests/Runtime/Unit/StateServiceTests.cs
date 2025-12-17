@@ -45,7 +45,7 @@ namespace CasperSDK.Tests.Unit
             // Arrange
             const string key = "account-hash-abc123";
             
-            _mockClient.SetupResponse("query_global_state", new QueryGlobalStateResponse
+            _mockClient.SetupResponse("query_global_state", new TestQueryGlobalStateResponse
             {
                 api_version = "2.0.0",
                 stored_value = new { Account = new { main_purse = "uref-xyz" } },
@@ -70,7 +70,7 @@ namespace CasperSDK.Tests.Unit
             const string key = "some-key";
             const string stateRootHash = "state-root-xyz";
             
-            _mockClient.SetupResponse("query_global_state", new QueryGlobalStateResponse
+            _mockClient.SetupResponse("query_global_state", new TestQueryGlobalStateResponse
             {
                 stored_value = new { data = "test" }
             });
@@ -97,7 +97,7 @@ namespace CasperSDK.Tests.Unit
         public async Task QueryGlobalStateAsync_KeyNotFound_ReturnsNull()
         {
             // Arrange - no stored_value in response
-            _mockClient.SetupResponse("query_global_state", new QueryGlobalStateResponse
+            _mockClient.SetupResponse("query_global_state", new TestQueryGlobalStateResponse
             {
                 api_version = "2.0.0",
                 stored_value = null
@@ -121,7 +121,7 @@ namespace CasperSDK.Tests.Unit
             const string dictionaryKey = "my-dict-key";
             const string seedUref = "uref-seed123-007";
             
-            _mockClient.SetupResponse("state_get_dictionary_item", new DictionaryItemResponse
+            _mockClient.SetupResponse("state_get_dictionary_item", new TestDictionaryItemResponse
             {
                 api_version = "2.0.0",
                 dictionary_key = "dictionary-key-xyz",
@@ -171,7 +171,7 @@ namespace CasperSDK.Tests.Unit
             const string dictionaryName = "my_dictionary";
             const string dictionaryKey = "item_key";
             
-            _mockClient.SetupResponse("state_get_dictionary_item", new DictionaryItemResponse
+            _mockClient.SetupResponse("state_get_dictionary_item", new TestDictionaryItemResponse
             {
                 dictionary_key = "generated-dict-key",
                 stored_value = new { value = 12345 }

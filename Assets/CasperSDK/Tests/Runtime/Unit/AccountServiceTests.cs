@@ -47,17 +47,17 @@ namespace CasperSDK.Tests.Unit
             const string expectedBalance = "1000000000";
 
             // Setup mock responses for the 3-step balance query
-            _mockClient.SetupResponse("info_get_status", new
+            _mockClient.SetupResponse("info_get_status", new TestStatusInfoResponse
             {
-                last_added_block_info = new { state_root_hash = "abc123stateroot" }
+                last_added_block_info = new TestBlockInfo { hash = "abc123" }
             });
             
-            _mockClient.SetupResponse("state_get_account_info", new
+            _mockClient.SetupResponse("state_get_account_info", new TestAccountInfoResponse
             {
-                account = new { main_purse = "uref-abcd1234-007" }
+                account = new TestAccountData { main_purse = "uref-abcd1234-007" }
             });
             
-            _mockClient.SetupResponse("state_get_balance", new
+            _mockClient.SetupResponse("state_get_balance", new TestBalanceResponse
             {
                 balance_value = expectedBalance
             });
@@ -119,9 +119,9 @@ namespace CasperSDK.Tests.Unit
             // Arrange
             const string publicKey = "01abc123def456";
 
-            _mockClient.SetupResponse("state_get_account_info", new
+            _mockClient.SetupResponse("state_get_account_info", new TestAccountInfoResponse
             {
-                account = new
+                account = new TestAccountData
                 {
                     account_hash = "account-hash-abc123",
                     main_purse = "uref-purse123-007",
