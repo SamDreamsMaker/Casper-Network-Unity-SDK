@@ -7,6 +7,8 @@ using CasperSDK.Services.Transaction;
 using CasperSDK.Services.Block;
 using CasperSDK.Services.Network;
 using CasperSDK.Services.Deploy;
+using CasperSDK.Services.State;
+using CasperSDK.Services.Validator;
 using CasperSDK.Network.Clients;
 using CasperSDK.Unity;
 
@@ -37,6 +39,8 @@ namespace CasperSDK.Core
         private IBlockService _blockService;
         private INetworkInfoService _networkInfoService;
         private IDeployService _deployService;
+        private IStateService _stateService;
+        private IValidatorService _validatorService;
         private bool _isInitialized;
 
         /// <summary>
@@ -141,6 +145,30 @@ namespace CasperSDK.Core
             }
         }
 
+        /// <summary>
+        /// Gets the state service for global state queries
+        /// </summary>
+        public IStateService StateService
+        {
+            get
+            {
+                EnsureInitialized();
+                return _stateService;
+            }
+        }
+
+        /// <summary>
+        /// Gets the validator service for staking info
+        /// </summary>
+        public IValidatorService ValidatorService
+        {
+            get
+            {
+                EnsureInitialized();
+                return _validatorService;
+            }
+        }
+
         private void Awake()
         {
             if (_instance == null)
@@ -188,6 +216,8 @@ namespace CasperSDK.Core
                 _blockService = new BlockService(_networkClient, config);
                 _networkInfoService = new NetworkInfoService(_networkClient, config);
                 _deployService = new DeployService(_networkClient, config);
+                _stateService = new StateService(_networkClient, config);
+                _validatorService = new ValidatorService(_networkClient, config);
 
                 _isInitialized = true;
 
