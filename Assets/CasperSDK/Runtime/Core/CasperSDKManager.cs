@@ -6,6 +6,7 @@ using CasperSDK.Services.Account;
 using CasperSDK.Services.Transaction;
 using CasperSDK.Services.Block;
 using CasperSDK.Services.Network;
+using CasperSDK.Services.Deploy;
 using CasperSDK.Network.Clients;
 using CasperSDK.Unity;
 
@@ -35,6 +36,7 @@ namespace CasperSDK.Core
         private ITransactionService _transactionService;
         private IBlockService _blockService;
         private INetworkInfoService _networkInfoService;
+        private IDeployService _deployService;
         private bool _isInitialized;
 
         /// <summary>
@@ -127,6 +129,18 @@ namespace CasperSDK.Core
             }
         }
 
+        /// <summary>
+        /// Gets the deploy service for transaction queries
+        /// </summary>
+        public IDeployService DeployService
+        {
+            get
+            {
+                EnsureInitialized();
+                return _deployService;
+            }
+        }
+
         private void Awake()
         {
             if (_instance == null)
@@ -173,6 +187,7 @@ namespace CasperSDK.Core
                 _transactionService = new TransactionService(_networkClient, config);
                 _blockService = new BlockService(_networkClient, config);
                 _networkInfoService = new NetworkInfoService(_networkClient, config);
+                _deployService = new DeployService(_networkClient, config);
 
                 _isInitialized = true;
 
