@@ -6,6 +6,7 @@ using CasperSDK.Services.Network;
 using CasperSDK.Services.Validator;
 using CasperSDK.Network.Clients;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -19,6 +20,9 @@ namespace CasperSDK.Tests.Integration
     /// - No internet connection
     /// - Testnet node is down
     /// - Rate limiting is applied
+    /// 
+    /// WARNING: Validator tests are skipped by default as they can be slow
+    /// due to large data volumes on testnet.
     /// </summary>
     [TestFixture]
     [Category("Integration")]
@@ -26,6 +30,9 @@ namespace CasperSDK.Tests.Integration
     {
         private NetworkConfig _config;
         private INetworkClient _networkClient;
+
+        // Timeout for integration tests (30 seconds)
+        private const int TEST_TIMEOUT_MS = 30000;
 
         [OneTimeSetUp]
         public void OneTimeSetup()
@@ -50,6 +57,7 @@ namespace CasperSDK.Tests.Integration
 
         [Test]
         [Order(1)]
+        [Timeout(TEST_TIMEOUT_MS)]
         public async Task Integration_TestConnection_ShouldSucceed()
         {
             // Act
@@ -66,6 +74,7 @@ namespace CasperSDK.Tests.Integration
 
         [Test]
         [Order(2)]
+        [Timeout(TEST_TIMEOUT_MS)]
         public async Task Integration_GetLatestBlock_ReturnsValidBlock()
         {
             // Arrange
@@ -86,6 +95,7 @@ namespace CasperSDK.Tests.Integration
 
         [Test]
         [Order(3)]
+        [Timeout(TEST_TIMEOUT_MS)]
         public async Task Integration_GetStateRootHash_ReturnsValidHash()
         {
             // Arrange
@@ -107,6 +117,7 @@ namespace CasperSDK.Tests.Integration
 
         [Test]
         [Order(4)]
+        [Timeout(TEST_TIMEOUT_MS)]
         public async Task Integration_GetNodeStatus_ReturnsValidStatus()
         {
             // Arrange
@@ -128,6 +139,7 @@ namespace CasperSDK.Tests.Integration
 
         [Test]
         [Order(5)]
+        [Timeout(TEST_TIMEOUT_MS)]
         public async Task Integration_GetPeers_ReturnsPeerList()
         {
             // Arrange
@@ -146,9 +158,14 @@ namespace CasperSDK.Tests.Integration
         #endregion
 
         #region Validator Service Integration Tests
+        // NOTE: These tests are marked as Explicit because they can be very slow
+        // due to the large amount of validator/bid data on testnet.
+        // Run them manually when needed.
 
         [Test]
         [Order(6)]
+        [Timeout(60000)] // 60 second timeout for auction data
+        [Explicit("Skipped by default - auction data can be very large and slow to process")]
         public async Task Integration_GetAuctionInfo_ReturnsValidAuctionState()
         {
             // Arrange
@@ -169,6 +186,8 @@ namespace CasperSDK.Tests.Integration
 
         [Test]
         [Order(7)]
+        [Timeout(60000)] // 60 second timeout for validator data
+        [Explicit("Skipped by default - validator data can be very large and slow to process")]
         public async Task Integration_GetValidators_ReturnsActiveValidators()
         {
             // Arrange
@@ -194,6 +213,7 @@ namespace CasperSDK.Tests.Integration
 
         [Test]
         [Order(100)]
+        [Timeout(TEST_TIMEOUT_MS)]
         public void Integration_InvalidBlockHash_ShouldHandleGracefully()
         {
             // Arrange
