@@ -1,5 +1,12 @@
 {
   "dependencies": {
+    "com.uac.editor-api": {
+      "version": "https://github.com/SamDreamsMaker/unity-api-communicator-package.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "5340bdf8c28e66faa8a22461709fcf1166288247"
+    },
     "com.unity.2d.animation": {
       "version": "12.0.2",
       "depth": 0,

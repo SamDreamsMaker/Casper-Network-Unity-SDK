@@ -4,6 +4,8 @@ using CasperSDK.Core.Configuration;
 using CasperSDK.Core.Interfaces;
 using CasperSDK.Services.Account;
 using CasperSDK.Services.Transaction;
+using CasperSDK.Services.Block;
+using CasperSDK.Services.Network;
 using CasperSDK.Network.Clients;
 using CasperSDK.Unity;
 
@@ -31,6 +33,8 @@ namespace CasperSDK.Core
         private INetworkClient _networkClient;
         private IAccountService _accountService;
         private ITransactionService _transactionService;
+        private IBlockService _blockService;
+        private INetworkInfoService _networkInfoService;
         private bool _isInitialized;
 
         /// <summary>
@@ -99,6 +103,30 @@ namespace CasperSDK.Core
             }
         }
 
+        /// <summary>
+        /// Gets the block service for blockchain queries
+        /// </summary>
+        public IBlockService BlockService
+        {
+            get
+            {
+                EnsureInitialized();
+                return _blockService;
+            }
+        }
+
+        /// <summary>
+        /// Gets the network info service for node status
+        /// </summary>
+        public INetworkInfoService NetworkInfoService
+        {
+            get
+            {
+                EnsureInitialized();
+                return _networkInfoService;
+            }
+        }
+
         private void Awake()
         {
             if (_instance == null)
@@ -143,6 +171,8 @@ namespace CasperSDK.Core
                 // Initialize services with dependency injection
                 _accountService = new AccountService(_networkClient, config);
                 _transactionService = new TransactionService(_networkClient, config);
+                _blockService = new BlockService(_networkClient, config);
+                _networkInfoService = new NetworkInfoService(_networkClient, config);
 
                 _isInitialized = true;
 
