@@ -23,7 +23,6 @@ namespace CasperSDK.Tests.Unit
         {
             _mockClient = new MockNetworkClient();
             _config = UnityEngine.ScriptableObject.CreateInstance<NetworkConfig>();
-            _config.EnableLogging = false;
             _validatorService = new ValidatorService(_mockClient, _config);
         }
 
