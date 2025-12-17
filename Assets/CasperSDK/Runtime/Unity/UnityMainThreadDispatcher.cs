@@ -24,7 +24,7 @@ namespace CasperSDK.Unity
                 if (_instance == null)
                 {
                     // Try to find existing instance
-                    _instance = FindObjectOfType<UnityMainThreadDispatcher>();
+                    _instance = FindFirstObjectByType<UnityMainThreadDispatcher>();
 
                     if (_instance == null)
                     {

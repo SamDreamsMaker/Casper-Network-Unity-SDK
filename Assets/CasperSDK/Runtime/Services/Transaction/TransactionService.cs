@@ -38,6 +38,9 @@ namespace CasperSDK.Services.Transaction
         /// <inheritdoc/>
         public async Task<string> SubmitTransactionAsync(Models.Transaction transaction)
         {
+            // Placeholder for proper async implementation
+            await Task.CompletedTask;
+            
             if (transaction == null)
             {
                 throw new ArgumentNullException(nameof(transaction));
@@ -94,6 +97,9 @@ namespace CasperSDK.Services.Transaction
         /// <inheritdoc/>
         public async Task<ExecutionResult> GetTransactionStatusAsync(string transactionHash)
         {
+            // Placeholder for proper async implementation
+            await Task.CompletedTask;
+            
             if (string.IsNullOrWhiteSpace(transactionHash))
             {
                 throw new ArgumentNullException(nameof(transactionHash));
@@ -127,6 +133,9 @@ namespace CasperSDK.Services.Transaction
         /// <inheritdoc/>
         public async Task<long> EstimateGasAsync(Models.Transaction transaction)
         {
+            // Placeholder for proper async implementation
+            await Task.CompletedTask;
+            
             if (transaction == null)
             {
                 throw new ArgumentNullException(nameof(transaction));

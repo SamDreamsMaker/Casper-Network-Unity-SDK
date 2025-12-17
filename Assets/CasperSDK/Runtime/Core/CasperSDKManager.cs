@@ -53,7 +53,7 @@ namespace CasperSDK.Core
                         if (_instance == null)
                         {
                             // Try to find existing instance
-                            _instance = FindObjectOfType<CasperSDKManager>();
+                            _instance = FindFirstObjectByType<CasperSDKManager>();
 
                             if (_instance == null)
                             {

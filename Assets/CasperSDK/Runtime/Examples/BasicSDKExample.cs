@@ -43,7 +43,7 @@ namespace CasperSDK.Examples
                 // await GetBalanceExample();
 
                 // Example 3: Build a transaction
-                await BuildTransactionExample();
+                BuildTransactionExample();
             }
             catch (Exception ex)
             {
@@ -80,7 +80,7 @@ namespace CasperSDK.Examples
             Debug.Log($"Balance for {_testPublicKey}: {balance} motes");
         }
 
-        private async System.Threading.Tasks.Task BuildTransactionExample()
+        private void BuildTransactionExample()
         {
             Debug.Log("\n--- Build Transaction Example ---");
 
