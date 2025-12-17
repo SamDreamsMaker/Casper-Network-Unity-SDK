@@ -1,6 +1,7 @@
 using NUnit.Framework;
 using CasperSDK.Core.Configuration;
 using CasperSDK.Services.Deploy;
+using CasperSDK.Models.RPC;
 using CasperSDK.Tests.Mocks;
 using System;
 using System.Threading.Tasks;
@@ -110,7 +111,7 @@ namespace CasperSDK.Tests.Unit
 
             // Assert
             Assert.IsNotNull(status);
-            Assert.AreEqual(ExecutionStatus.Pending, status.Status);
+            Assert.AreEqual(DeployStatus.Pending, status.Status);
         }
 
         [Test]
@@ -140,7 +141,7 @@ namespace CasperSDK.Tests.Unit
 
             // Assert
             Assert.IsNotNull(status);
-            Assert.AreEqual(ExecutionStatus.Success, status.Status);
+            Assert.AreEqual(DeployStatus.Success, status.Status);
             Assert.AreEqual("block-abc", status.BlockHash);
             Assert.AreEqual("1000000", status.Cost);
         }
@@ -176,7 +177,7 @@ namespace CasperSDK.Tests.Unit
 
             // Assert
             Assert.IsNotNull(status);
-            Assert.AreEqual(ExecutionStatus.Failed, status.Status);
+            Assert.AreEqual(DeployStatus.Failed, status.Status);
             Assert.AreEqual("Out of gas", status.ErrorMessage);
         }
 
@@ -190,7 +191,7 @@ namespace CasperSDK.Tests.Unit
 
             // Assert
             Assert.IsNotNull(status);
-            Assert.AreEqual(ExecutionStatus.NotFound, status.Status);
+            Assert.AreEqual(DeployStatus.NotFound, status.Status);
         }
 
         #endregion

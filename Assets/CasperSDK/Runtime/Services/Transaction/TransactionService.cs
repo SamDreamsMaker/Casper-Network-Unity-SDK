@@ -4,6 +4,7 @@ using UnityEngine;
 using CasperSDK.Core.Configuration;
 using CasperSDK.Core.Interfaces;
 using CasperSDK.Models;
+using CasperSDK.Models.RPC;
 
 namespace CasperSDK.Services.Transaction
 {
@@ -20,8 +21,6 @@ namespace CasperSDK.Services.Transaction
         /// <summary>
         /// Initializes a new instance of TransactionService
         /// </summary>
-        /// <param name="networkClient">Network client for RPC calls</param>
-        /// <param name="config">Network configuration</param>
         public TransactionService(INetworkClient networkClient, NetworkConfig config)
         {
             _networkClient = networkClient ?? throw new ArgumentNullException(nameof(networkClient));
@@ -38,9 +37,6 @@ namespace CasperSDK.Services.Transaction
         /// <inheritdoc/>
         public async Task<string> SubmitTransactionAsync(Models.Transaction transaction)
         {
-            // Placeholder for proper async implementation
-            await Task.CompletedTask;
-            
             if (transaction == null)
             {
                 throw new ArgumentNullException(nameof(transaction));
@@ -53,39 +49,30 @@ namespace CasperSDK.Services.Transaction
                     Debug.Log($"[CasperSDK] Submitting transaction from {transaction.From} to {transaction.Target}");
                 }
 
-                // TODO: Sign the transaction before submitting
-                // TODO: Convert to proper deploy format
-                // TODO: Submit via account_put_transaction RPC method
+                // Build the deploy object for submission
+                var deploy = BuildDeployFromTransaction(transaction);
 
-                // Placeholder implementation
-                var parameters = new
+                // Submit via account_put_deploy RPC method
+                var param = new { deploy = deploy };
+                var result = await _networkClient.SendRequestAsync<DeploySubmitResponse>("account_put_deploy", param);
+
+                var deployHash = result?.deploy_hash;
+
+                if (string.IsNullOrEmpty(deployHash))
                 {
-                    deploy = new
-                    {
-                        header = new
-                        {
-                            account = transaction.From,
-                            timestamp = transaction.Timestamp,
-                            ttl = transaction.TTL + "ms",
-                            gas_price = transaction.GasPrice,
-                            body_hash = "placeholder-hash",
-                            chain_name = transaction.ChainName
-                        },
-                        payment = new { },
-                        session = new { },
-                        approvals = new[] { new { } }
-                    }
-                };
-
-                // For now, generate a placeholder transaction hash
-                var transactionHash = $"tx-{Guid.NewGuid():N}";
+                    throw new TransactionException("Failed to submit transaction: No deploy hash returned");
+                }
 
                 if (_enableLogging)
                 {
-                    Debug.Log($"[CasperSDK] Transaction submitted with hash: {transactionHash}");
+                    Debug.Log($"[CasperSDK] Transaction submitted with hash: {deployHash}");
                 }
 
-                return transactionHash;
+                return deployHash;
+            }
+            catch (TransactionException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
@@ -97,9 +84,6 @@ namespace CasperSDK.Services.Transaction
         /// <inheritdoc/>
         public async Task<ExecutionResult> GetTransactionStatusAsync(string transactionHash)
         {
-            // Placeholder for proper async implementation
-            await Task.CompletedTask;
-            
             if (string.IsNullOrWhiteSpace(transactionHash))
             {
                 throw new ArgumentNullException(nameof(transactionHash));
@@ -112,16 +96,58 @@ namespace CasperSDK.Services.Transaction
                     Debug.Log($"[CasperSDK] Checking status for transaction: {transactionHash}");
                 }
 
-                // TODO: Implement actual status check via info_get_deploy_result RPC method
+                // Query via info_get_deploy RPC method
+                var param = new { deploy_hash = transactionHash };
+                var response = await _networkClient.SendRequestAsync<DeployResponse>("info_get_deploy", param);
+
+                if (response == null)
+                {
+                    return new ExecutionResult
+                    {
+                        TransactionHash = transactionHash,
+                        Status = ExecutionStatus.NotFound
+                    };
+                }
+
+                // Analyze execution results
+                if (response.execution_results == null || response.execution_results.Length == 0)
+                {
+                    return new ExecutionResult
+                    {
+                        TransactionHash = transactionHash,
+                        Status = ExecutionStatus.Pending
+                    };
+                }
+
+                var execResult = response.execution_results[0];
                 
-                // Placeholder implementation
-                var result = new ExecutionResult
+                if (execResult.result?.Success != null)
+                {
+                    return new ExecutionResult
+                    {
+                        TransactionHash = transactionHash,
+                        Status = ExecutionStatus.Success,
+                        BlockHash = execResult.block_hash,
+                        Cost = execResult.result.Success.cost
+                    };
+                }
+                else if (execResult.result?.Failure != null)
+                {
+                    return new ExecutionResult
+                    {
+                        TransactionHash = transactionHash,
+                        Status = ExecutionStatus.Failed,
+                        BlockHash = execResult.block_hash,
+                        ErrorMessage = execResult.result.Failure.error_message,
+                        Cost = execResult.result.Failure.cost
+                    };
+                }
+
+                return new ExecutionResult
                 {
                     TransactionHash = transactionHash,
                     Status = ExecutionStatus.Pending
                 };
-
-                return result;
             }
             catch (Exception ex)
             {
@@ -133,9 +159,6 @@ namespace CasperSDK.Services.Transaction
         /// <inheritdoc/>
         public async Task<long> EstimateGasAsync(Models.Transaction transaction)
         {
-            // Placeholder for proper async implementation
-            await Task.CompletedTask;
-            
             if (transaction == null)
             {
                 throw new ArgumentNullException(nameof(transaction));
@@ -148,9 +171,30 @@ namespace CasperSDK.Services.Transaction
                     Debug.Log($"[CasperSDK] Estimating gas for transaction");
                 }
 
-                // TODO: Implement actual gas estimation
-                // For simple transfers, use a default estimate
-                long estimatedGas = SDKSettings.DefaultGasLimit;
+                // Casper uses fixed gas costs based on transaction type
+                long estimatedGas;
+                
+                if (IsNativeTransfer(transaction))
+                {
+                    // Native CSPR transfers have a fixed cost
+                    estimatedGas = SDKSettings.DefaultTransferGas;
+                }
+                else
+                {
+                    // Contract calls use default gas limit
+                    estimatedGas = SDKSettings.DefaultGasLimit;
+                }
+
+                // Query recent blocks to get average gas prices (optional enhancement)
+                try
+                {
+                    await _networkClient.SendRequestAsync<StatusRpcResponse>("info_get_status", null);
+                    // Could adjust estimate based on network congestion here
+                }
+                catch
+                {
+                    // Ignore - use default estimate
+                }
 
                 if (_enableLogging)
                 {
@@ -165,5 +209,77 @@ namespace CasperSDK.Services.Transaction
                 throw new CasperSDKException("Failed to estimate gas", ex);
             }
         }
+
+        #region Private Helpers
+
+        private bool IsNativeTransfer(Models.Transaction transaction)
+        {
+            return string.IsNullOrEmpty(transaction.ContractHash) &&
+                   string.IsNullOrEmpty(transaction.EntryPoint);
+        }
+
+        private object BuildDeployFromTransaction(Models.Transaction transaction)
+        {
+            var timestamp = transaction.Timestamp ?? DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+            var ttl = $"{transaction.TTL}ms";
+            
+            return new
+            {
+                hash = transaction.DeployHash ?? "",
+                header = new
+                {
+                    account = transaction.From,
+                    timestamp = timestamp,
+                    ttl = ttl,
+                    gas_price = transaction.GasPrice,
+                    body_hash = transaction.BodyHash ?? "",
+                    dependencies = new string[0],
+                    chain_name = transaction.ChainName ?? "casper-test"
+                },
+                payment = new
+                {
+                    ModuleBytes = new
+                    {
+                        module_bytes = "",
+                        args = new object[0]
+                    }
+                },
+                session = BuildSessionFromTransaction(transaction),
+                approvals = transaction.Approvals ?? new Models.Approval[0]
+            };
+        }
+
+        private object BuildSessionFromTransaction(Models.Transaction transaction)
+        {
+            if (IsNativeTransfer(transaction))
+            {
+                return new
+                {
+                    Transfer = new
+                    {
+                        args = new[]
+                        {
+                            new { name = "amount", value = new { cl_type = "U512", bytes = transaction.Amount } },
+                            new { name = "target", value = new { cl_type = "PublicKey", bytes = transaction.Target } },
+                            new { name = "id", value = new { cl_type = "Option", bytes = transaction.TransferId?.ToString() ?? "00" } }
+                        }
+                    }
+                };
+            }
+            else
+            {
+                return new
+                {
+                    StoredContractByHash = new
+                    {
+                        hash = transaction.ContractHash,
+                        entry_point = transaction.EntryPoint,
+                        args = transaction.Args ?? new object[0]
+                    }
+                };
+            }
+        }
+
+        #endregion
     }
 }

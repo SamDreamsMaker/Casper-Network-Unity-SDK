@@ -4,8 +4,8 @@ using UnityEngine;
 using CasperSDK.Core.Configuration;
 using CasperSDK.Core.Interfaces;
 using CasperSDK.Models;
+using CasperSDK.Models.RPC;
 using CasperSDK.Unity;
-using Newtonsoft.Json;
 
 namespace CasperSDK.Services.Account
 {
@@ -22,8 +22,6 @@ namespace CasperSDK.Services.Account
         /// <summary>
         /// Initializes a new instance of AccountService
         /// </summary>
-        /// <param name="networkClient">Network client for RPC calls</param>
-        /// <param name="config">Network configuration</param>
         public AccountService(INetworkClient networkClient, NetworkConfig config)
         {
             _networkClient = networkClient ?? throw new ArgumentNullException(nameof(networkClient));
@@ -36,7 +34,7 @@ namespace CasperSDK.Services.Account
         {
             if (string.IsNullOrWhiteSpace(publicKey))
             {
-                throw new ArgumentNullException(nameof(publicKey));
+                throw new ArgumentException("Public key cannot be null or empty", nameof(publicKey));
             }
 
             try
@@ -46,29 +44,30 @@ namespace CasperSDK.Services.Account
                     Debug.Log($"[CasperSDK] Getting account info for: {publicKey}");
                 }
 
-                // Get account info via RPC
-                var parameters = new { public_key = publicKey };
-                var result = await _networkClient.SendRequestAsync<object>("state_get_account_info", parameters);
-
-                // For now, return a basic account structure
-                // TODO: Properly parse the response once we have the actual response structure
-                var account = new Models.Account
+                var param = new AccountInfoParams
                 {
-                    PublicKey = publicKey,
-                    AccountHash = $"account-hash-{publicKey.Substring(0, 8)}..."
+                    public_key = publicKey,
+                    block_identifier = null
                 };
 
-                if (_enableLogging)
+                var result = await _networkClient.SendRequestAsync<AccountInfoRpcResponse>("state_get_account_info", param);
+
+                if (result?.account == null)
                 {
-                    Debug.Log($"[CasperSDK] Account retrieved successfully");
+                    return null;
                 }
 
-                return account;
+                return new Models.Account
+                {
+                    AccountHash = result.account.account_hash,
+                    MainPurse = result.account.main_purse,
+                    PublicKey = publicKey
+                };
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[CasperSDK] Failed to get account: {ex.Message}");
-                throw new CasperSDKException("Failed to retrieve account information", ex);
+                Debug.LogError($"[CasperSDK] Failed to get account info: {ex.Message}");
+                throw;
             }
         }
 
@@ -77,7 +76,7 @@ namespace CasperSDK.Services.Account
         {
             if (string.IsNullOrWhiteSpace(publicKey))
             {
-                throw new ArgumentNullException(nameof(publicKey));
+                throw new ArgumentException("Public key cannot be null or empty", nameof(publicKey));
             }
 
             try
@@ -87,133 +86,132 @@ namespace CasperSDK.Services.Account
                     Debug.Log($"[CasperSDK] Getting balance for: {publicKey}");
                 }
 
-                // Get current state root hash - required for state_get_balance
-                var statusResponse = await _networkClient.SendRequestAsync<StatusResponse>("info_get_status", null);
-                string stateRootHash = statusResponse?.LastAddedBlockInfo?.StateRootHash;
-                
-                if (string.IsNullOrEmpty(stateRootHash))
+                // Step 1: Get latest block hash for state root
+                var statusResult = await _networkClient.SendRequestAsync<StatusResponse>("info_get_status", null);
+                var blockHash = statusResult?.last_added_block_info?.hash;
+
+                if (string.IsNullOrEmpty(blockHash))
                 {
-                    throw new CasperSDKException("Failed to get current state root hash");
+                    throw new Exception("Could not get latest block hash");
                 }
 
-                // Get account info to obtain main purse
-                var accountParams = new AccountInfoParams { public_key = publicKey };
-                var accountResult = await _networkClient.SendRequestAsync<AccountInfoRpcResponse>("state_get_account_info", accountParams);
-
-                if (accountResult?.Account?.MainPurse == null)
+                // Step 2: Get account info to find main purse
+                var accountParam = new AccountInfoParams
                 {
-                    throw new CasperSDKException("Failed to retrieve account main purse");
-                }
-
-                string mainPurse = accountResult.Account.MainPurse;
-
-                if (_enableLogging)
-                {
-                    Debug.Log($"[CasperSDK] Main purse URef: {mainPurse}");
-                }
-
-                // Get balance from purse with state_root_hash
-                var balanceParams = new BalanceParams 
-                { 
-                    purse_uref = mainPurse,
-                    state_root_hash = stateRootHash
+                    public_key = publicKey,
+                    block_identifier = new AccountBlockIdentifier { Hash = blockHash }
                 };
-                
-                var balanceResult = await _networkClient.SendRequestAsync<BalanceRpcResponse>("state_get_balance", balanceParams);
 
-                string balance = balanceResult?.BalanceValue ?? "0";
+                var accountResult = await _networkClient.SendRequestAsync<AccountInfoRpcResponse>("state_get_account_info", accountParam);
 
-                if (_enableLogging)
+                if (accountResult?.account == null)
                 {
-                    Debug.Log($"[CasperSDK] Balance: {balance} motes");
+                    throw new Exception($"Account not found for public key: {publicKey}");
                 }
 
-                return balance;
+                var mainPurse = accountResult.account.main_purse;
+
+                if (string.IsNullOrEmpty(mainPurse))
+                {
+                    throw new Exception("Main purse not found for account");
+                }
+
+                // Step 3: Get balance using main purse
+                var stateRootHash = statusResult.last_added_block_info?.state_root_hash;
+                
+                var balanceParam = new BalanceParams
+                {
+                    state_root_hash = stateRootHash,
+                    purse_uref = mainPurse
+                };
+
+                var balanceResult = await _networkClient.SendRequestAsync<BalanceRpcResponse>("state_get_balance", balanceParam);
+
+                return balanceResult?.balance_value ?? "0";
             }
             catch (Exception ex)
             {
                 Debug.LogError($"[CasperSDK] Failed to get balance: {ex.Message}");
-                throw new CasperSDKException("Failed to retrieve account balance", ex);
+                throw;
             }
         }
 
         /// <inheritdoc/>
         public async Task<KeyPair> GenerateKeyPairAsync(KeyAlgorithm algorithm = KeyAlgorithm.ED25519)
         {
-            return await Task.Run(() =>
+            await Task.CompletedTask; // Simulate async
+
+            try
             {
-                try
+                if (_enableLogging)
                 {
-                    if (_enableLogging)
-                    {
-                        Debug.Log($"[CasperSDK] Generating {algorithm} key pair");
-                    }
-
-                    // TODO: Implement actual key generation using Casper.Network.SDK
-                    // For now, return a placeholder
-                    var keyPair = new KeyPair
-                    {
-                        Algorithm = algorithm,
-                        PublicKeyHex = "01" + GenerateRandomHex(64),
-                        PrivateKeyHex = GenerateRandomHex(64),
-                        AccountHash = "account-hash-" + GenerateRandomHex(64)
-                    };
-
-                    if (_enableLogging)
-                    {
-                        Debug.Log($"[CasperSDK] Key pair generated successfully");
-                    }
-
-                    return keyPair;
+                    Debug.Log($"[CasperSDK] Generating {algorithm} key pair");
                 }
-                catch (Exception ex)
+
+                // Generate random keys (simplified - real implementation would use proper crypto)
+                var privateKeyHex = GenerateRandomHex(64);
+                var publicKeyHex = GenerateRandomHex(64);
+                
+                // Add algorithm prefix
+                var prefix = algorithm == KeyAlgorithm.ED25519 ? "01" : "02";
+                publicKeyHex = prefix + publicKeyHex;
+
+                // Generate account hash (simplified)
+                var accountHash = "account-hash-" + GenerateRandomHex(64);
+
+                return new KeyPair
                 {
-                    Debug.LogError($"[CasperSDK] Failed to generate key pair: {ex.Message}");
-                    throw new CasperSDKException("Failed to generate key pair", ex);
-                }
-            });
+                    PublicKeyHex = publicKeyHex,
+                    PrivateKeyHex = privateKeyHex,
+                    Algorithm = algorithm,
+                    AccountHash = accountHash
+                };
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[CasperSDK] Failed to generate key pair: {ex.Message}");
+                throw;
+            }
         }
 
         /// <inheritdoc/>
-        public async Task<KeyPair> ImportAccountAsync(string privateKeyHex, KeyAlgorithm algorithm = KeyAlgorithm.ED25519)
+        public async Task<KeyPair> ImportAccountAsync(string secretKeyHex, KeyAlgorithm algorithm = KeyAlgorithm.ED25519)
         {
-            if (string.IsNullOrWhiteSpace(privateKeyHex))
+            if (string.IsNullOrWhiteSpace(secretKeyHex))
             {
-                throw new ArgumentNullException(nameof(privateKeyHex));
+                throw new ArgumentException("Secret key cannot be null or empty", nameof(secretKeyHex));
             }
 
-            return await Task.Run(() =>
+            await Task.CompletedTask; // Simulate async
+
+            try
             {
-                try
+                if (_enableLogging)
                 {
-                    if (_enableLogging)
-                    {
-                        Debug.Log($"[CasperSDK] Importing account with {algorithm} private key");
-                    }
-
-                    // TODO: Implement actual key import using Casper.Network.SDK
-                    // Derive public key from private key
-                    var keyPair = new KeyPair
-                    {
-                        Algorithm = algorithm,
-                        PrivateKeyHex = privateKeyHex,
-                        PublicKeyHex = "01" + GenerateRandomHex(64), // Placeholder
-                        AccountHash = "account-hash-" + GenerateRandomHex(64)
-                    };
-
-                    if (_enableLogging)
-                    {
-                        Debug.Log($"[CasperSDK] Account imported successfully");
-                    }
-
-                    return keyPair;
+                    Debug.Log($"[CasperSDK] Importing {algorithm} account");
                 }
-                catch (Exception ex)
+
+                // Derive public key from secret key (simplified)
+                var publicKeyHex = secretKeyHex.Substring(0, Math.Min(64, secretKeyHex.Length));
+                
+                var prefix = algorithm == KeyAlgorithm.ED25519 ? "01" : "02";
+                publicKeyHex = prefix + publicKeyHex;
+
+                var accountHash = "account-hash-" + GenerateRandomHex(64);
+
+                return new KeyPair
                 {
-                    Debug.LogError($"[CasperSDK] Failed to import account: {ex.Message}");
-                    throw new CasperSDKException("Failed to import account", ex);
-                }
-            });
+                    PublicKeyHex = publicKeyHex,
+                    PrivateKeyHex = secretKeyHex,
+                    Algorithm = algorithm,
+                    AccountHash = accountHash
+                };
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"[CasperSDK] Failed to import account: {ex.Message}");
+                throw;
+            }
         }
 
         private string GenerateRandomHex(int length)
@@ -223,78 +221,5 @@ namespace CasperSDK.Services.Account
             random.NextBytes(bytes);
             return BitConverter.ToString(bytes).Replace("-", "").ToLower();
         }
-    }
-
-    // Response models for JSON RPC parsing
-    // These models match the Casper RPC response structure
-    [Serializable]
-    public class AccountInfoRpcResponse
-    {
-        public string api_version;
-        public AccountDataResponse account;
-
-        public AccountDataResponse Account => account;
-    }
-
-    [Serializable]
-    public class AccountDataResponse
-    {
-        public string main_purse;
-
-        public string MainPurse => main_purse;
-    }
-
-    [Serializable]
-    public class BalanceRpcResponse
-    {
-        public string api_version;
-        public string balance_value;
-
-        public string BalanceValue => balance_value;
-    }
-
-    // RPC Parameter classes - simple format
-    [Serializable]
-    public class AccountInfoParams
-    {
-        public string public_key;
-        
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public BlockIdentifier block_identifier; // Optional
-    }
-
-    [Serializable]
-    public class BlockIdentifier
-    {
-        public int Height;
-    }
-
-    [Serializable]
-    public class BalanceParams
-    {
-        public string purse_uref;
-        
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public string state_root_hash; // Optional
-    }
-
-    // Response for info_get_status
-    [Serializable]
-    public class StatusResponse
-    {
-        public string api_version;
-        public BlockInfo last_added_block_info;
-
-        public BlockInfo LastAddedBlockInfo => last_added_block_info;
-    }
-
-    [Serializable]
-    public class BlockInfo
-    {
-        public string hash;
-        public string state_root_hash;
-        public int height;
-
-        public string StateRootHash => state_root_hash;
     }
 }

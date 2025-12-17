@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using CasperSDK.Core.Configuration;
 using CasperSDK.Core.Interfaces;
+using CasperSDK.Models.RPC;
 using UnityEngine;
 
 namespace CasperSDK.Network.Clients
@@ -45,10 +46,9 @@ namespace CasperSDK.Network.Clients
             // Return mock data based on the RPC method
             if (method == "state_get_account_info")
             {
-                // Create properly typed response using snake_case fields
-                var mockResponse = new CasperSDK.Services.Account.AccountInfoRpcResponse
+                var mockResponse = new AccountInfoRpcResponse
                 {
-                    account = new CasperSDK.Services.Account.AccountDataResponse
+                    account = new AccountDataResponse
                     {
                         main_purse = "uref-0102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f20-007"
                     }
@@ -58,7 +58,7 @@ namespace CasperSDK.Network.Clients
             }
             else if (method == "state_get_balance")
             {
-                var mockResponse = new CasperSDK.Services.Account.BalanceRpcResponse
+                var mockResponse = new BalanceRpcResponse
                 {
                     balance_value = "5000000000000" // 5000 CSPR in motes
                 };

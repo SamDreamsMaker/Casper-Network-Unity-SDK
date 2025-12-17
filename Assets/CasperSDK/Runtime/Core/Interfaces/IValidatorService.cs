@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using CasperSDK.Services.Validator;
+using CasperSDK.Models.RPC;
 
 namespace CasperSDK.Core.Interfaces
 {

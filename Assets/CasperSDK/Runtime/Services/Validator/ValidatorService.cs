@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using CasperSDK.Core.Configuration;
 using CasperSDK.Core.Interfaces;
-using Newtonsoft.Json;
+using CasperSDK.Models.RPC;
 
 namespace CasperSDK.Services.Validator
 {
@@ -22,9 +22,7 @@ namespace CasperSDK.Services.Validator
             _enableLogging = config.EnableLogging;
         }
 
-        /// <summary>
-        /// Get auction information including all bids and validators.
-        /// </summary>
+        /// <inheritdoc/>
         public async Task<AuctionInfo> GetAuctionInfoAsync(string blockHash = null)
         {
             try
@@ -44,16 +42,61 @@ namespace CasperSDK.Services.Validator
 
                 if (result?.auction_state == null)
                 {
-                    Debug.LogWarning("[CasperSDK] No auction info returned");
                     return null;
+                }
+
+                var auctionState = result.auction_state;
+
+                // Convert era validators
+                var eraValidators = new List<EraValidatorInfo>();
+                if (auctionState.era_validators != null)
+                {
+                    foreach (var era in auctionState.era_validators)
+                    {
+                        var validators = new List<ValidatorInfo>();
+                        if (era.validator_weights != null)
+                        {
+                            foreach (var v in era.validator_weights)
+                            {
+                                validators.Add(new ValidatorInfo
+                                {
+                                    PublicKey = v.public_key,
+                                    Weight = v.weight,
+                                    EraId = era.era_id
+                                });
+                            }
+                        }
+                        eraValidators.Add(new EraValidatorInfo
+                        {
+                            EraId = era.era_id,
+                            Validators = validators.ToArray()
+                        });
+                    }
+                }
+
+                // Convert bids
+                var bids = new List<ValidatorBid>();
+                if (auctionState.bids != null)
+                {
+                    foreach (var bid in auctionState.bids)
+                    {
+                        bids.Add(new ValidatorBid
+                        {
+                            PublicKey = bid.public_key,
+                            BondingPurse = bid.bid?.bonding_purse,
+                            StakedAmount = bid.bid?.staked_amount,
+                            DelegationRate = bid.bid?.delegation_rate ?? 0,
+                            Inactive = bid.bid?.inactive ?? false
+                        });
+                    }
                 }
 
                 return new AuctionInfo
                 {
-                    StateRootHash = result.auction_state.state_root_hash,
-                    BlockHeight = result.auction_state.block_height,
-                    EraValidators = result.auction_state.era_validators,
-                    Bids = result.auction_state.bids
+                    StateRootHash = auctionState.state_root_hash,
+                    BlockHeight = auctionState.block_height,
+                    EraValidators = eraValidators.ToArray(),
+                    Bids = bids.ToArray()
                 };
             }
             catch (Exception ex)
@@ -63,48 +106,25 @@ namespace CasperSDK.Services.Validator
             }
         }
 
-        /// <summary>
-        /// Get list of active validators for the current era.
-        /// </summary>
+        /// <inheritdoc/>
         public async Task<ValidatorInfo[]> GetValidatorsAsync()
         {
             try
             {
                 if (_enableLogging)
                 {
-                    Debug.Log("[CasperSDK] Getting current validators");
+                    Debug.Log("[CasperSDK] Getting validators list");
                 }
 
                 var auctionInfo = await GetAuctionInfoAsync();
-                
+
                 if (auctionInfo?.EraValidators == null || auctionInfo.EraValidators.Length == 0)
                 {
                     return new ValidatorInfo[0];
                 }
 
-                // Get validators from the most recent era
-                var currentEra = auctionInfo.EraValidators[auctionInfo.EraValidators.Length - 1];
-                var validators = new List<ValidatorInfo>();
-
-                if (currentEra?.validator_weights != null)
-                {
-                    foreach (var weight in currentEra.validator_weights)
-                    {
-                        validators.Add(new ValidatorInfo
-                        {
-                            PublicKey = weight.public_key,
-                            Weight = weight.weight,
-                            EraId = currentEra.era_id
-                        });
-                    }
-                }
-
-                if (_enableLogging)
-                {
-                    Debug.Log($"[CasperSDK] Found {validators.Count} validators");
-                }
-
-                return validators.ToArray();
+                // Return validators from the current era (first one)
+                return auctionInfo.EraValidators[0].Validators ?? new ValidatorInfo[0];
             }
             catch (Exception ex)
             {
@@ -113,25 +133,23 @@ namespace CasperSDK.Services.Validator
             }
         }
 
-        /// <summary>
-        /// Get validator info by public key.
-        /// </summary>
+        /// <inheritdoc/>
         public async Task<ValidatorBid> GetValidatorByKeyAsync(string publicKey)
         {
+            if (string.IsNullOrWhiteSpace(publicKey))
+            {
+                throw new ArgumentException("Public key cannot be null or empty", nameof(publicKey));
+            }
+
             try
             {
-                if (string.IsNullOrEmpty(publicKey))
-                {
-                    throw new ArgumentException("Public key cannot be null or empty", nameof(publicKey));
-                }
-
                 if (_enableLogging)
                 {
-                    Debug.Log($"[CasperSDK] Getting validator info for: {publicKey}");
+                    Debug.Log($"[CasperSDK] Getting validator: {publicKey}");
                 }
 
                 var auctionInfo = await GetAuctionInfoAsync();
-                
+
                 if (auctionInfo?.Bids == null)
                 {
                     return null;
@@ -139,114 +157,19 @@ namespace CasperSDK.Services.Validator
 
                 foreach (var bid in auctionInfo.Bids)
                 {
-                    if (bid.public_key?.Equals(publicKey, StringComparison.OrdinalIgnoreCase) == true)
+                    if (bid.PublicKey == publicKey)
                     {
-                        return new ValidatorBid
-                        {
-                            PublicKey = bid.public_key,
-                            BondingPurse = bid.bid?.bonding_purse,
-                            StakedAmount = bid.bid?.staked_amount,
-                            DelegationRate = bid.bid?.delegation_rate ?? 0,
-                            Inactive = bid.bid?.inactive ?? false
-                        };
+                        return bid;
                     }
                 }
 
-                Debug.LogWarning($"[CasperSDK] Validator not found: {publicKey}");
                 return null;
             }
             catch (Exception ex)
             {
-                Debug.LogError($"[CasperSDK] Failed to get validator: {ex.Message}");
+                Debug.LogError($"[CasperSDK] Failed to get validator by key: {ex.Message}");
                 throw;
             }
         }
     }
-
-    #region Response Models
-
-    [Serializable]
-    public class AuctionInfoResponse
-    {
-        public string api_version;
-        public AuctionState auction_state;
-    }
-
-    [Serializable]
-    public class AuctionState
-    {
-        public string state_root_hash;
-        public long block_height;
-        public EraValidator[] era_validators;
-        public BidInfo[] bids;
-    }
-
-    [Serializable]
-    public class EraValidator
-    {
-        public int era_id;
-        public ValidatorWeight[] validator_weights;
-    }
-
-    [Serializable]
-    public class ValidatorWeight
-    {
-        public string public_key;
-        public string weight;
-    }
-
-    [Serializable]
-    public class BidInfo
-    {
-        public string public_key;
-        public BidData bid;
-    }
-
-    [Serializable]
-    public class BidData
-    {
-        public string bonding_purse;
-        public string staked_amount;
-        public int delegation_rate;
-        public bool inactive;
-        public DelegatorInfo[] delegators;
-    }
-
-    [Serializable]
-    public class DelegatorInfo
-    {
-        public string delegator_public_key;
-        public string staked_amount;
-        public string bonding_purse;
-    }
-
-    #endregion
-
-    #region Public Models
-
-    public class AuctionInfo
-    {
-        public string StateRootHash { get; set; }
-        public long BlockHeight { get; set; }
-        public EraValidator[] EraValidators { get; set; }
-        public BidInfo[] Bids { get; set; }
-    }
-
-    public class ValidatorInfo
-    {
-        public string PublicKey { get; set; }
-        public string Weight { get; set; }
-        public int EraId { get; set; }
-    }
-
-    public class ValidatorBid
-    {
-        public string PublicKey { get; set; }
-        public string BondingPurse { get; set; }
-        public string StakedAmount { get; set; }
-        public int DelegationRate { get; set; }
-        public bool Inactive { get; set; }
-    }
-
-    #endregion
 }

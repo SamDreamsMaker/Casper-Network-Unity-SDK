@@ -21,6 +21,11 @@ namespace CasperSDK.Core.Configuration
         public const long DefaultGasLimit = 100000000;
 
         /// <summary>
+        /// Default gas for native CSPR transfers (10,000 motes standard)
+        /// </summary>
+        public const long DefaultTransferGas = 10000;
+
+        /// <summary>
         /// Minimum balance warning threshold (in motes)
         /// </summary>
         public const long MinBalanceWarningThreshold = 2500000000; // 2.5 CSPR

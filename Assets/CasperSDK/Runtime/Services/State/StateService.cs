@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using CasperSDK.Core.Configuration;
 using CasperSDK.Core.Interfaces;
-using Newtonsoft.Json;
+using CasperSDK.Models.RPC;
 
 namespace CasperSDK.Services.State
 {
@@ -21,40 +21,44 @@ namespace CasperSDK.Services.State
             _enableLogging = config.EnableLogging;
         }
 
-        /// <summary>
-        /// Query global state by key.
-        /// </summary>
+        /// <inheritdoc/>
         public async Task<GlobalStateValue> QueryGlobalStateAsync(string key, string stateRootHash = null)
         {
+            if (string.IsNullOrWhiteSpace(key))
+            {
+                throw new ArgumentException("Key cannot be null or empty", nameof(key));
+            }
+
             try
             {
-                if (string.IsNullOrEmpty(key))
-                {
-                    throw new ArgumentException("Key cannot be null or empty", nameof(key));
-                }
-
                 if (_enableLogging)
                 {
                     Debug.Log($"[CasperSDK] Querying global state for key: {key}");
                 }
 
-                var param = new QueryGlobalStateParams
-                {
-                    key = key,
-                    path = new string[0]
-                };
-
-                // Use state_root_hash if provided, otherwise query by block
+                object param;
                 if (!string.IsNullOrEmpty(stateRootHash))
                 {
-                    param.state_identifier = new StateIdentifier { StateRootHash = stateRootHash };
+                    param = new
+                    {
+                        key = key,
+                        path = new string[0],
+                        state_identifier = new { StateRootHash = stateRootHash }
+                    };
+                }
+                else
+                {
+                    param = new
+                    {
+                        key = key,
+                        path = new string[0]
+                    };
                 }
 
                 var result = await _networkClient.SendRequestAsync<QueryGlobalStateResponse>("query_global_state", param);
 
                 if (result?.stored_value == null)
                 {
-                    Debug.LogWarning($"[CasperSDK] No value found for key: {key}");
                     return null;
                 }
 
@@ -72,33 +76,32 @@ namespace CasperSDK.Services.State
             }
         }
 
-        /// <summary>
-        /// Get a dictionary item by its key.
-        /// </summary>
+        /// <inheritdoc/>
         public async Task<DictionaryItem> GetDictionaryItemAsync(string dictionaryKey, string seedUref, string stateRootHash = null)
         {
+            if (string.IsNullOrWhiteSpace(dictionaryKey))
+            {
+                throw new ArgumentException("Dictionary key cannot be null or empty", nameof(dictionaryKey));
+            }
+
+            if (string.IsNullOrWhiteSpace(seedUref))
+            {
+                throw new ArgumentException("Seed URef cannot be null or empty", nameof(seedUref));
+            }
+
             try
             {
-                if (string.IsNullOrEmpty(dictionaryKey))
-                {
-                    throw new ArgumentException("Dictionary key cannot be null or empty", nameof(dictionaryKey));
-                }
-
-                if (string.IsNullOrEmpty(seedUref))
-                {
-                    throw new ArgumentException("Seed URef cannot be null or empty", nameof(seedUref));
-                }
-
                 if (_enableLogging)
                 {
                     Debug.Log($"[CasperSDK] Getting dictionary item: {dictionaryKey}");
                 }
 
-                var param = new DictionaryItemParams
+                var param = new
                 {
-                    dictionary_identifier = new DictionaryIdentifier
+                    state_root_hash = stateRootHash,
+                    dictionary_identifier = new
                     {
-                        URef = new URefDictionaryIdentifier
+                        URef = new
                         {
                             seed_uref = seedUref,
                             dictionary_item_key = dictionaryKey
@@ -106,16 +109,10 @@ namespace CasperSDK.Services.State
                     }
                 };
 
-                if (!string.IsNullOrEmpty(stateRootHash))
-                {
-                    param.state_root_hash = stateRootHash;
-                }
-
                 var result = await _networkClient.SendRequestAsync<DictionaryItemResponse>("state_get_dictionary_item", param);
 
-                if (result?.stored_value == null)
+                if (result == null)
                 {
-                    Debug.LogWarning($"[CasperSDK] Dictionary item not found: {dictionaryKey}");
                     return null;
                 }
 
@@ -134,28 +131,37 @@ namespace CasperSDK.Services.State
             }
         }
 
-        /// <summary>
-        /// Get a dictionary item by contract named key.
-        /// </summary>
+        /// <inheritdoc/>
         public async Task<DictionaryItem> GetDictionaryItemByNameAsync(string contractHash, string dictionaryName, string dictionaryKey, string stateRootHash = null)
         {
+            if (string.IsNullOrWhiteSpace(contractHash))
+            {
+                throw new ArgumentException("Contract hash cannot be null or empty", nameof(contractHash));
+            }
+
+            if (string.IsNullOrWhiteSpace(dictionaryName))
+            {
+                throw new ArgumentException("Dictionary name cannot be null or empty", nameof(dictionaryName));
+            }
+
+            if (string.IsNullOrWhiteSpace(dictionaryKey))
+            {
+                throw new ArgumentException("Dictionary key cannot be null or empty", nameof(dictionaryKey));
+            }
+
             try
             {
-                if (string.IsNullOrEmpty(contractHash))
-                {
-                    throw new ArgumentException("Contract hash cannot be null or empty", nameof(contractHash));
-                }
-
                 if (_enableLogging)
                 {
                     Debug.Log($"[CasperSDK] Getting dictionary item by name: {dictionaryName}/{dictionaryKey}");
                 }
 
-                var param = new DictionaryItemParams
+                var param = new
                 {
-                    dictionary_identifier = new DictionaryIdentifier
+                    state_root_hash = stateRootHash,
+                    dictionary_identifier = new
                     {
-                        ContractNamedKey = new ContractNamedKeyIdentifier
+                        ContractNamedKey = new
                         {
                             key = contractHash,
                             dictionary_name = dictionaryName,
@@ -164,14 +170,9 @@ namespace CasperSDK.Services.State
                     }
                 };
 
-                if (!string.IsNullOrEmpty(stateRootHash))
-                {
-                    param.state_root_hash = stateRootHash;
-                }
-
                 var result = await _networkClient.SendRequestAsync<DictionaryItemResponse>("state_get_dictionary_item", param);
 
-                if (result?.stored_value == null)
+                if (result == null)
                 {
                     return null;
                 }
@@ -191,99 +192,4 @@ namespace CasperSDK.Services.State
             }
         }
     }
-
-    #region Response Models
-
-    [Serializable]
-    public class QueryGlobalStateResponse
-    {
-        public string api_version;
-        public string block_header;
-        public object stored_value;
-        public string merkle_proof;
-    }
-
-    [Serializable]
-    public class DictionaryItemResponse
-    {
-        public string api_version;
-        public string dictionary_key;
-        public object stored_value;
-        public string merkle_proof;
-    }
-
-    #endregion
-
-    #region Parameter Models
-
-    [Serializable]
-    public class QueryGlobalStateParams
-    {
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public StateIdentifier state_identifier;
-        public string key;
-        public string[] path;
-    }
-
-    [Serializable]
-    public class StateIdentifier
-    {
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public string StateRootHash;
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public string BlockHash;
-    }
-
-    [Serializable]
-    public class DictionaryItemParams
-    {
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public string state_root_hash;
-        public DictionaryIdentifier dictionary_identifier;
-    }
-
-    [Serializable]
-    public class DictionaryIdentifier
-    {
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public URefDictionaryIdentifier URef;
-        [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-        public ContractNamedKeyIdentifier ContractNamedKey;
-    }
-
-    [Serializable]
-    public class URefDictionaryIdentifier
-    {
-        public string seed_uref;
-        public string dictionary_item_key;
-    }
-
-    [Serializable]
-    public class ContractNamedKeyIdentifier
-    {
-        public string key;
-        public string dictionary_name;
-        public string dictionary_item_key;
-    }
-
-    #endregion
-
-    #region Public Models
-
-    public class GlobalStateValue
-    {
-        public string Key { get; set; }
-        public object StoredValue { get; set; }
-        public string MerkleProof { get; set; }
-    }
-
-    public class DictionaryItem
-    {
-        public string Key { get; set; }
-        public string DictionaryKey { get; set; }
-        public object StoredValue { get; set; }
-        public string MerkleProof { get; set; }
-    }
-
-    #endregion
 }

@@ -105,6 +105,9 @@ Debug.Log($"Chain: {status.ChainspecName}, Peers: {status.Peers.Length}");
 | **NetworkInfoService** | `GetStatusAsync`, `GetPeersAsync`, `GetChainspecAsync` | Network and node information |
 | **DeployService** | `GetDeployAsync`, `GetDeployStatusAsync`, `SubmitDeployAsync` | Deploy tracking and submission |
 | **TransactionService** | `CreateTransactionBuilder`, `SubmitTransactionAsync`, `EstimateGasAsync` | Transaction building and submission |
+| **StateService** | `QueryGlobalStateAsync`, `GetDictionaryItemAsync`, `GetDictionaryItemByNameAsync` | Global state and dictionary queries |
+| **ValidatorService** | `GetAuctionInfoAsync`, `GetValidatorsAsync`, `GetValidatorByKeyAsync` | Validator and staking information |
+
 
 ### Configuration
 
@@ -148,17 +151,23 @@ Open `Assets/CasperSDK/Samples/BalanceTestScene.unity` to see a working example:
 ```
 Assets/CasperSDK/
 ├── Editor/                 # Unity Editor tools
-│   └── TMPUpgrader.cs     # UI migration utility
-├── Resources/             # ScriptableObject configs
-│   └── TestnetConfig.asset
+├── Resources/              # ScriptableObject configs
 ├── Runtime/
-│   ├── Core/              # SDK Manager, Interfaces, Exceptions
-│   ├── Models/            # Data models
-│   ├── Network/           # RPC client, Mock client
-│   ├── Services/          # Account, Block, Deploy, Network, Transaction
-│   └── Unity/             # Main thread dispatcher
-├── Samples/               # Example scenes and scripts
-└── Tests/                 # Unit tests
+│   ├── Core/               # SDK Manager, Interfaces, Exceptions
+│   ├── Models/             # Data models (Account, Transaction, KeyPair...)
+│   │   └── RPC/            # RPC response models
+│   ├── Network/            # RPC client, Mock client
+│   ├── Services/           # All 7 services
+│   │   ├── Account/
+│   │   ├── Block/
+│   │   ├── Deploy/
+│   │   ├── Network/
+│   │   ├── State/
+│   │   ├── Transaction/
+│   │   └── Validator/
+│   └── Unity/              # Main thread dispatcher
+├── Samples/                # Example scenes and scripts
+└── Tests/                  # Unit and Integration tests
 ```
 
 ---

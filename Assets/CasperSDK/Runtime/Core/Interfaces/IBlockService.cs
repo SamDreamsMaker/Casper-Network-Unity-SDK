@@ -1,5 +1,5 @@
 using System.Threading.Tasks;
-using CasperSDK.Services.Block;
+using CasperSDK.Models.RPC;
 
 namespace CasperSDK.Core.Interfaces
 {
