@@ -49,5 +49,22 @@ namespace CasperSDK.Core.Configuration
         /// Maximum transaction polling duration (in milliseconds - 10 minutes)
         /// </summary>
         public const int MaxTransactionPollingDuration = 600000;
+
+        // Network URLs
+        
+        /// <summary>
+        /// Default Casper Testnet RPC URL
+        /// </summary>
+        public const string DefaultTestnetRpcUrl = "https://rpc.testnet.casperlabs.io/rpc";
+
+        /// <summary>
+        /// Default Casper Mainnet RPC URL
+        /// </summary>
+        public const string DefaultMainnetRpcUrl = "https://rpc.mainnet.casperlabs.io/rpc";
+
+        /// <summary>
+        /// Default SSE port for Casper nodes
+        /// </summary>
+        public const int DefaultSsePort = 9999;
     }
 }

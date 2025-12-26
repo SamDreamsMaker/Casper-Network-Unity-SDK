@@ -109,8 +109,8 @@ namespace CasperSDK.Editor
             else
             {
                 var rpcUrl = _selectedNetworkType == 0 
-                    ? "http://34.224.191.55:7777/rpc"  // Mainnet
-                    : "http://52.35.59.254:7777/rpc"; // Testnet
+                    ? SDKSettings.DefaultMainnetRpcUrl
+                    : SDKSettings.DefaultTestnetRpcUrl;
                 EditorGUILayout.LabelField("RPC URL", rpcUrl);
             }
 
