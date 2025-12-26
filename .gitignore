@@ -3,6 +3,8 @@ Library/
 Temp/
 Obj/
 UnityGenerated/
+UserSettings/
+Logs/
 *.csproj
 *.sln
 *.suo
