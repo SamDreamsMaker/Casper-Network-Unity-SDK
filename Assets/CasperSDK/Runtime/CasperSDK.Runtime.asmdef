@@ -1,15 +1,14 @@
 {
     "name": "CasperSDK.Runtime",
     "rootNamespace": "CasperSDK",
-    "references": [
-        "Newtonsoft.Json"
-    ],
+    "references": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,
-    "overrideReferences": false,
+    "overrideReferences": true,
     "precompiledReferences": [
-        "Casper.Network.SDK.dll"
+        "BouncyCastle.Crypto.dll",
+        "Newtonsoft.Json.dll"
     ],
     "autoReferenced": true,
     "defineConstraints": [],

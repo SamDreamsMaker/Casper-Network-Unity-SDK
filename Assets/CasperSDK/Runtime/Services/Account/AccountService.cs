@@ -145,27 +145,20 @@ namespace CasperSDK.Services.Account
             {
                 if (_enableLogging)
                 {
-                    Debug.Log($"[CasperSDK] Generating {algorithm} key pair");
+                    Debug.Log($"[CasperSDK] Generating {algorithm} key pair using BouncyCastle");
                 }
 
-                // Generate random keys (simplified - real implementation would use proper crypto)
-                var privateKeyHex = GenerateRandomHex(64);
-                var publicKeyHex = GenerateRandomHex(64);
-                
-                // Add algorithm prefix
-                var prefix = algorithm == KeyAlgorithm.ED25519 ? "01" : "02";
-                publicKeyHex = prefix + publicKeyHex;
+                // Use CasperKeyGenerator with real BouncyCastle cryptography
+                var keyPair = algorithm == KeyAlgorithm.ED25519
+                    ? Utilities.Cryptography.CasperKeyGenerator.GenerateED25519()
+                    : Utilities.Cryptography.CasperKeyGenerator.GenerateSECP256K1();
 
-                // Generate account hash (simplified)
-                var accountHash = "account-hash-" + GenerateRandomHex(64);
-
-                return new KeyPair
+                if (_enableLogging)
                 {
-                    PublicKeyHex = publicKeyHex,
-                    PrivateKeyHex = privateKeyHex,
-                    Algorithm = algorithm,
-                    AccountHash = accountHash
-                };
+                    Debug.Log($"[CasperSDK] Key pair generated: {keyPair.PublicKeyHex.Substring(0, 20)}...");
+                }
+
+                return keyPair;
             }
             catch (Exception ex)
             {
@@ -188,24 +181,20 @@ namespace CasperSDK.Services.Account
             {
                 if (_enableLogging)
                 {
-                    Debug.Log($"[CasperSDK] Importing {algorithm} account");
+                    Debug.Log($"[CasperSDK] Importing {algorithm} account using BouncyCastle");
                 }
 
-                // Derive public key from secret key (simplified)
-                var publicKeyHex = secretKeyHex.Substring(0, Math.Min(64, secretKeyHex.Length));
-                
-                var prefix = algorithm == KeyAlgorithm.ED25519 ? "01" : "02";
-                publicKeyHex = prefix + publicKeyHex;
+                // Use CasperKeyGenerator with real BouncyCastle cryptography
+                var keyPair = algorithm == KeyAlgorithm.ED25519
+                    ? Utilities.Cryptography.CasperKeyGenerator.ImportED25519(secretKeyHex)
+                    : Utilities.Cryptography.CasperKeyGenerator.ImportSECP256K1(secretKeyHex);
 
-                var accountHash = "account-hash-" + GenerateRandomHex(64);
-
-                return new KeyPair
+                if (_enableLogging)
                 {
-                    PublicKeyHex = publicKeyHex,
-                    PrivateKeyHex = secretKeyHex,
-                    Algorithm = algorithm,
-                    AccountHash = accountHash
-                };
+                    Debug.Log($"[CasperSDK] Account imported: {keyPair.PublicKeyHex.Substring(0, 20)}...");
+                }
+
+                return keyPair;
             }
             catch (Exception ex)
             {
@@ -213,13 +202,6 @@ namespace CasperSDK.Services.Account
                 throw;
             }
         }
-
-        private string GenerateRandomHex(int length)
-        {
-            var random = new System.Random();
-            var bytes = new byte[length / 2];
-            random.NextBytes(bytes);
-            return BitConverter.ToString(bytes).Replace("-", "").ToLower();
-        }
     }
 }
+
