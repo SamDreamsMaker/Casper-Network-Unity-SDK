@@ -38,3 +38,7 @@ Thumbs.db
 # Build results
 [Bb]uild/
 [Bb]uilds/
+
+# Unity Test Runner temp scenes
+InitTestScene*.unity
+InitTestScene*.unity.meta
