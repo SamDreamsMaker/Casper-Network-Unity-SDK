@@ -19,15 +19,15 @@
 
 | Feature | Description |
 |---------|-------------|
-| 🔗 **Real Blockchain Integration** | Connect to Casper Mainnet or Testnet with real RPC calls |
-| 💰 **Balance Queries** | Fetch account balances in CSPR and motes |
-| 🧱 **Block Explorer** | Query blocks by height, hash, or get the latest block |
-| 📡 **Network Status** | Get node status, peers list, and chainspec info |
-| 📜 **Deploy Tracking** | Query and monitor deploy execution status |
-| 🔐 **Key Generation** | Generate ED25519 and SECP256K1 key pairs |
-| 🏗️ **Transaction Builder** | Fluent API for building transactions |
-| 🧪 **Mock Network** | Offline development with mock responses |
-| 🎮 **Unity Optimized** | Proper main thread handling, async/await support |
+| 🔐 **Real Cryptography** | ED25519 & SECP256K1 with BouncyCastle |
+| 💸 **CSPR Transfers** | Send CSPR tokens with one method call |
+| 📜 **Smart Contracts** | Deploy WASM and call contract methods |
+| 🔗 **Blockchain Integration** | Connect to Mainnet or Testnet |
+| 💰 **Balance Queries** | Fetch account balances in CSPR/motes |
+| 🧱 **Block Explorer** | Query blocks by height, hash, or latest |
+| 📄 **Key Import/Export** | PEM format for Casper Wallet/Signer |
+| 🏗️ **Transaction Builder** | Fluent API with Blake2b hashing |
+| 🎮 **Unity Optimized** | Async/await, main thread handling |
 
 ---
 
@@ -49,47 +49,71 @@ https://github.com/SamDreamsMaker/Casper-Network-Unity-SDK.git
 
 ### Dependencies
 
-The SDK automatically includes:
+The SDK includes:
+- ✅ BouncyCastle.Crypto.dll (cryptography - included in Plugins/)
 - ✅ Newtonsoft.Json (via Unity Package Manager)
-- ✅ TextMeshPro (for UI examples)
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Initialize the SDK
+### TestnetDemo (Easiest Way)
+
+1. Create an empty GameObject
+2. Add `TestnetDemo` component
+3. Play → Account generated automatically
+4. Use context menu (right-click) for all operations
+
+### Basic Usage
 
 ```csharp
-using CasperSDK.Core;
-using CasperSDK.Core.Configuration;
+using CasperSDK.Utilities.Cryptography;
+using CasperSDK.Services.Transfer;
 
-// Load configuration from Resources
-var config = Resources.Load<NetworkConfig>("TestnetConfig");
-CasperSDKManager.Instance.Initialize(config);
+// Generate a new key pair
+var keyPair = CasperKeyGenerator.GenerateED25519();
+Debug.Log($"Public Key: {keyPair.PublicKeyHex}");
+Debug.Log($"Account Hash: {keyPair.AccountHash}");
+
+// Transfer CSPR
+var transferService = new TransferService(networkClient, config);
+var result = await transferService.TransferAsync(
+    senderKeyPair,
+    recipientPublicKey,
+    TransferService.CsprToMotes(10m) // 10 CSPR
+);
 ```
 
-### 2. Get Account Balance
+### Import Keys from Casper Wallet
 
 ```csharp
-var accountService = CasperSDKManager.Instance.AccountService;
-string balance = await accountService.GetBalanceAsync(publicKey);
-Debug.Log($"Balance: {balance} motes");
+// Import PEM file exported from Casper Wallet
+var keyPair = KeyExporter.ImportFromPemFile("path/to/secret_key.pem");
+
+// Export for Casper Signer
+KeyExporter.ExportToPemFiles(keyPair, "output/path");
 ```
 
-### 3. Query Latest Block
+### Deploy Smart Contract
 
 ```csharp
-var blockService = CasperSDKManager.Instance.BlockService;
-var block = await blockService.GetLatestBlockAsync();
-Debug.Log($"Block height: {block.Header.Height}");
-```
+var contractService = new ContractService(networkClient, config);
 
-### 4. Check Network Status
+// Deploy WASM
+var result = await contractService.DeployContractAsync(
+    wasmBytes,
+    args,
+    senderKeyPair,
+    "50000000000" // 50 CSPR payment
+);
 
-```csharp
-var networkService = CasperSDKManager.Instance.NetworkInfoService;
-var status = await networkService.GetStatusAsync();
-Debug.Log($"Chain: {status.ChainspecName}, Peers: {status.Peers.Length}");
+// Call contract method
+var callResult = await contractService.CallContractByHashAsync(
+    contractHash,
+    "transfer",
+    runtimeArgs,
+    senderKeyPair
+);
 ```
 
 ---
@@ -98,20 +122,29 @@ Debug.Log($"Chain: {status.ChainspecName}, Peers: {status.Peers.Length}");
 
 ### Services Overview
 
-| Service | Methods | Description |
-|---------|---------|-------------|
-| **AccountService** | `GetBalanceAsync`, `GetAccountAsync`, `GenerateKeyPairAsync`, `ImportAccountAsync` | Account management and balance queries |
-| **BlockService** | `GetLatestBlockAsync`, `GetBlockByHashAsync`, `GetBlockByHeightAsync`, `GetStateRootHashAsync` | Blockchain block queries |
-| **NetworkInfoService** | `GetStatusAsync`, `GetPeersAsync`, `GetChainspecAsync` | Network and node information |
-| **DeployService** | `GetDeployAsync`, `GetDeployStatusAsync`, `SubmitDeployAsync` | Deploy tracking and submission |
-| **TransactionService** | `CreateTransactionBuilder`, `SubmitTransactionAsync`, `EstimateGasAsync` | Transaction building and submission |
-| **StateService** | `QueryGlobalStateAsync`, `GetDictionaryItemAsync`, `GetDictionaryItemByNameAsync` | Global state and dictionary queries |
-| **ValidatorService** | `GetAuctionInfoAsync`, `GetValidatorsAsync`, `GetValidatorByKeyAsync` | Validator and staking information |
+| Service | Description |
+|---------|-------------|
+| **AccountService** | Balance queries, key generation, account import |
+| **TransferService** | High-level CSPR transfers |
+| **ContractService** | WASM deployment, contract calls, state queries |
+| **DeployService** | Deploy building, signing, submission |
+| **BlockService** | Block queries by hash/height |
+| **NetworkInfoService** | Node status, peers, chainspec |
+| **ValidatorService** | Auction info, validators |
 
+### Cryptography
+
+| Class | Purpose |
+|-------|---------|
+| **CasperKeyGenerator** | Generate ED25519/SECP256K1 keys |
+| **KeyExporter** | PEM import/export |
+| **DeploySigner** | Sign deploys with private key |
+| **CLValueBuilder** | Build runtime arguments |
+| **CryptoHelper** | Blake2b, hex conversion, validation |
 
 ### Configuration
 
-Create a `NetworkConfig` ScriptableObject:
+Create via **Window → Casper SDK → Settings** or:
 
 ```
 Right-click in Project → Create → CasperSDK → Network Config
@@ -119,30 +152,35 @@ Right-click in Project → Create → CasperSDK → Network Config
 
 | Property | Description | Default |
 |----------|-------------|---------|
-| `NetworkType` | Mainnet, Testnet, or Custom | Testnet |
-| `RpcUrl` | JSON-RPC endpoint URL | `https://node.testnet.casper.network/rpc` |
-| `EnableLogging` | Debug logging | true |
-| `UseMockNetwork` | Use mock responses for offline dev | false |
+| `NetworkType` | Mainnet, Testnet, Custom | Testnet |
+| `RpcUrl` | JSON-RPC endpoint | testnet node |
+| `EnableLogging` | Debug logs | true |
 
 ---
 
 ## 🎯 Examples
 
-### Balance Test Scene
+### TestnetDemo Features
 
-Open `Assets/CasperSDK/Samples/BalanceTestScene.unity` to see a working example:
+| Context Menu | Action |
+|--------------|--------|
+| Generate New Account | Create ED25519 key pair |
+| Check Balance | Query CSPR balance |
+| Prepare Test Transfer | Build & sign (no send) |
+| Execute Transfer | Send real CSPR |
+| Export Keys to PEM | For Casper Wallet/Signer |
+| Import Keys from PEM | Load existing keys |
+| Open Testnet Faucet | Get free testnet CSPR |
+| Open Block Explorer | View on cspr.live |
 
-1. Enter a Casper public key (hex format with algorithm prefix)
-2. Click "Get Balance"
-3. See real testnet balance displayed
+### Workflow for Testing
 
-### Example Public Key Format
-
-```
-0203ca1f9573d3452e45dfe176903bcbe72d22fcfee53401abbe4f3a4eff0f0db2c3
-```
-- `02` = SECP256K1 algorithm prefix
-- `03ca1f...` = compressed public key
+1. **Play** → Account generated
+2. **Export Keys to PEM** → Opens folder
+3. **Import in Casper Wallet** → Upload .pem file
+4. **Faucet** → Request testnet CSPR
+5. **Check Balance** → See 1000 CSPR
+6. **Execute Transfer** → Send to another account
 
 ---
 
@@ -150,68 +188,64 @@ Open `Assets/CasperSDK/Samples/BalanceTestScene.unity` to see a working example:
 
 ```
 Assets/CasperSDK/
-├── Editor/                 # Unity Editor tools
-├── Resources/              # ScriptableObject configs
+├── Editor/                 # Settings window
+├── Plugins/                # BouncyCastle.Crypto.dll
 ├── Runtime/
-│   ├── Core/               # SDK Manager, Interfaces, Exceptions
-│   ├── Models/             # Data models (Account, Transaction, KeyPair...)
-│   │   └── RPC/            # RPC response models
-│   ├── Network/            # RPC client, Mock client
-│   ├── Services/           # All 7 services
-│   │   ├── Account/
-│   │   ├── Block/
-│   │   ├── Deploy/
-│   │   ├── Network/
-│   │   ├── State/
-│   │   ├── Transaction/
-│   │   └── Validator/
-│   └── Unity/              # Main thread dispatcher
-├── Samples/                # Example scenes and scripts
-└── Tests/                  # Unit and Integration tests
+│   ├── Core/               # Configuration, Interfaces
+│   ├── Models/             # Deploy, KeyPair, CLValue
+│   ├── Network/            # RPC client
+│   ├── Services/
+│   │   ├── Account/        # Balance, keys
+│   │   ├── Contract/       # WASM, calls
+│   │   ├── Deploy/         # Builder, Signer
+│   │   ├── Transfer/       # CSPR transfers
+│   │   └── ...
+│   ├── Utilities/
+│   │   └── Cryptography/   # Keys, hashing
+│   └── Examples/           # TestnetDemo
+└── Tests/                  # Unit tests
 ```
 
 ---
 
-## 🔧 Development
+## 🔧 Technical Details
 
-### Branch Strategy
+### Cryptography (BouncyCastle)
 
-| Branch | Purpose |
-|--------|---------|
-| `main` | Stable releases |
-| `develop` | Active development |
+- **ED25519**: Key generation, signing, verification
+- **SECP256K1**: Key generation, ECDSA signing
+- **Blake2b-256**: Deploy hash, account hash
+- **PEM**: Import/export for wallets
 
-### Building
+### Transaction Flow
 
-1. Open the project in Unity 2022.3+
-2. Ensure no compilation errors
-3. Run tests: **Window → General → Test Runner**
+1. **Build** → DeployBuilder with fluent API
+2. **Hash** → Blake2b-256 body + header hash
+3. **Sign** → ED25519 or SECP256K1 signature
+4. **Submit** → account_put_deploy RPC
 
 ---
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT License - see [LICENSE](LICENSE)
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
-
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+2. Create feature branch (`git checkout -b feature/amazing`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push (`git push origin feature/amazing`)
+5. Open Pull Request
 
 ---
 
 ## 📞 Support
 
-- 🐛 [Report a Bug](https://github.com/SamDreamsMaker/Casper-Network-Unity-SDK/issues)
-- 💡 [Request a Feature](https://github.com/SamDreamsMaker/Casper-Network-Unity-SDK/issues)
-- 📧 Contact: [@SamDreamsMaker](https://github.com/SamDreamsMaker)
+- 🐛 [Report Bug](https://github.com/SamDreamsMaker/Casper-Network-Unity-SDK/issues)
+- 💡 [Request Feature](https://github.com/SamDreamsMaker/Casper-Network-Unity-SDK/issues)
 
 ---
 
