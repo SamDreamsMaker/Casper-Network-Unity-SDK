@@ -285,5 +285,65 @@ namespace CasperSDK.Examples
                 Debug.Log("[Demo] Public key copied to clipboard!");
             }
         }
+
+        [ContextMenu("Export Keys to PEM (for Casper Signer)")]
+        public void ExportKeysToPem()
+        {
+            if (_keyPair == null)
+            {
+                Debug.LogError("[Demo] No key pair to export. Generate an account first.");
+                return;
+            }
+
+            // Export to user's Documents folder
+            var documentsPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
+            var exportPath = System.IO.Path.Combine(documentsPath, "CasperKeys");
+            
+            KeyExporter.ExportToPemFiles(_keyPair, exportPath, "casper_testnet");
+
+            Debug.Log("\n==============================================");
+            Debug.Log("   KEYS EXPORTED FOR CASPER SIGNER");
+            Debug.Log("==============================================");
+            Debug.Log($"Location: {exportPath}");
+            Debug.Log("");
+            Debug.Log("To use with Casper Signer:");
+            Debug.Log("1. Install Casper Signer extension in your browser");
+            Debug.Log("2. Open Casper Signer → Import Account");
+            Debug.Log("3. Select 'Upload Keys' and choose 'casper_testnet_secret_key.pem'");
+            Debug.Log("4. Go to https://testnet.cspr.live/tools/faucet");
+            Debug.Log("5. Connect with Casper Signer and request CSPR");
+            Debug.Log("==============================================\n");
+
+            // Open the folder
+            System.Diagnostics.Process.Start("explorer.exe", exportPath);
+        }
+
+        [ContextMenu("Import Keys from PEM")]
+        public void ImportKeysFromPem()
+        {
+            var documentsPath = System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments);
+            var pemPath = System.IO.Path.Combine(documentsPath, "CasperKeys", "casper_testnet_secret_key.pem");
+
+            if (!System.IO.File.Exists(pemPath))
+            {
+                Debug.LogError($"[Demo] PEM file not found at: {pemPath}");
+                return;
+            }
+
+            try
+            {
+                _keyPair = KeyExporter.ImportFromPemFile(pemPath);
+                _currentPublicKey = _keyPair.PublicKeyHex;
+                
+                Debug.Log("[Demo] Keys imported successfully!");
+                Debug.Log($"  Public Key: {_keyPair.PublicKeyHex}");
+                Debug.Log($"  Account Hash: {_keyPair.AccountHash}");
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[Demo] Import failed: {ex.Message}");
+            }
+        }
     }
 }
+
