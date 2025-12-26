@@ -170,6 +170,7 @@ namespace CasperSDK.Utilities.Cryptography
 
         /// <summary>
         /// Imports a key pair from PEM string
+        /// Supports formats from Casper Wallet, Casper Signer, and casper-client
         /// </summary>
         public static KeyPair ImportFromPem(string pemContent, KeyAlgorithm algorithm = KeyAlgorithm.ED25519)
         {
@@ -178,6 +179,9 @@ namespace CasperSDK.Utilities.Cryptography
                 var pemReader = new PemReader(stringReader);
                 var keyObject = pemReader.ReadObject();
 
+                Debug.Log($"[CasperSDK] PEM object type: {keyObject?.GetType().Name ?? "null"}");
+
+                // Handle ED25519 private key
                 if (keyObject is Ed25519PrivateKeyParameters ed25519Private)
                 {
                     var publicKey = ed25519Private.GeneratePublicKey();
@@ -189,23 +193,51 @@ namespace CasperSDK.Utilities.Cryptography
                         AccountHash = CryptoHelper.GenerateAccountHash("01" + CryptoHelper.BytesToHex(publicKey.GetEncoded()))
                     };
                 }
-                else if (keyObject is ECPrivateKeyParameters ecPrivate)
+                
+                // Handle EC Private Key (SECP256K1 from Casper Wallet)
+                if (keyObject is ECPrivateKeyParameters ecPrivate)
                 {
-                    var curve = ECNamedCurveTable.GetByName("secp256k1");
-                    var publicKeyPoint = curve.G.Multiply(ecPrivate.D);
-                    var publicKeyBytes = publicKeyPoint.GetEncoded(true);
-
-                    return new KeyPair
-                    {
-                        PrivateKeyHex = CryptoHelper.BytesToHex(ecPrivate.D.ToByteArrayUnsigned()),
-                        PublicKeyHex = "02" + CryptoHelper.BytesToHex(publicKeyBytes),
-                        Algorithm = KeyAlgorithm.SECP256K1,
-                        AccountHash = CryptoHelper.GenerateAccountHash("02" + CryptoHelper.BytesToHex(publicKeyBytes))
-                    };
+                    return CreateKeyPairFromECPrivate(ecPrivate);
                 }
 
-                throw new ArgumentException("Unsupported key format in PEM file");
+                // Handle AsymmetricCipherKeyPair (EC PRIVATE KEY format)
+                if (keyObject is Org.BouncyCastle.Crypto.AsymmetricCipherKeyPair keyPair)
+                {
+                    if (keyPair.Private is ECPrivateKeyParameters ecPrivateFromPair)
+                    {
+                        return CreateKeyPairFromECPrivate(ecPrivateFromPair);
+                    }
+                    if (keyPair.Private is Ed25519PrivateKeyParameters ed25519FromPair)
+                    {
+                        var publicKey = ed25519FromPair.GeneratePublicKey();
+                        return new KeyPair
+                        {
+                            PrivateKeyHex = CryptoHelper.BytesToHex(ed25519FromPair.GetEncoded()),
+                            PublicKeyHex = "01" + CryptoHelper.BytesToHex(publicKey.GetEncoded()),
+                            Algorithm = KeyAlgorithm.ED25519,
+                            AccountHash = CryptoHelper.GenerateAccountHash("01" + CryptoHelper.BytesToHex(publicKey.GetEncoded()))
+                        };
+                    }
+                }
+
+                throw new ArgumentException($"Unsupported key format in PEM file. Got: {keyObject?.GetType().Name ?? "null"}");
             }
+        }
+
+        private static KeyPair CreateKeyPairFromECPrivate(ECPrivateKeyParameters ecPrivate)
+        {
+            // Get the curve - could be from the key's parameters or default to secp256k1
+            var curve = ECNamedCurveTable.GetByName("secp256k1");
+            var publicKeyPoint = curve.G.Multiply(ecPrivate.D);
+            var publicKeyBytes = publicKeyPoint.GetEncoded(true); // Compressed format
+
+            return new KeyPair
+            {
+                PrivateKeyHex = CryptoHelper.BytesToHex(ecPrivate.D.ToByteArrayUnsigned()),
+                PublicKeyHex = "02" + CryptoHelper.BytesToHex(publicKeyBytes),
+                Algorithm = KeyAlgorithm.SECP256K1,
+                AccountHash = CryptoHelper.GenerateAccountHash("02" + CryptoHelper.BytesToHex(publicKeyBytes))
+            };
         }
 
         #endregion
