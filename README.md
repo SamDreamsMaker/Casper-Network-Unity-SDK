@@ -22,11 +22,12 @@
 | 🔐 **Real Cryptography** | ED25519 & SECP256K1 with BouncyCastle |
 | 💸 **CSPR Transfers** | Send CSPR tokens with one method call |
 | 📜 **Smart Contracts** | Deploy WASM and call contract methods |
+| 🎨 **NFT Support** | CEP-78 standard: mint, transfer, burn |
+| 📡 **Event Streaming** | Real-time SSE for deploy/block events |
+| 🔒 **Secure Storage** | AES-256 encrypted key storage |
+| 👛 **Multi-Wallet** | Manage multiple accounts |
 | 🔗 **Blockchain Integration** | Connect to Mainnet or Testnet |
-| 💰 **Balance Queries** | Fetch account balances in CSPR/motes |
-| 🧱 **Block Explorer** | Query blocks by height, hash, or latest |
 | 📄 **Key Import/Export** | PEM format for Casper Wallet/Signer |
-| 🏗️ **Transaction Builder** | Fluent API with Blake2b hashing |
 | 🎮 **Unity Optimized** | Async/await, main thread handling |
 
 ---
@@ -127,10 +128,12 @@ var callResult = await contractService.CallContractByHashAsync(
 | **AccountService** | Balance queries, key generation, account import |
 | **TransferService** | High-level CSPR transfers |
 | **ContractService** | WASM deployment, contract calls, state queries |
-| **DeployService** | Deploy building, signing, submission |
+| **CEP78Service** | NFT mint, transfer, burn, metadata queries |
+| **EventStreamingService** | Real-time SSE events (deploys, blocks) |
+| **SecureKeyStorage** | AES-256 encrypted key storage |
+| **WalletManager** | Multi-account management |
 | **BlockService** | Block queries by hash/height |
 | **NetworkInfoService** | Node status, peers, chainspec |
-| **ValidatorService** | Auction info, validators |
 
 ### Cryptography
 
@@ -198,12 +201,16 @@ Assets/CasperSDK/
 │   │   ├── Account/        # Balance, keys
 │   │   ├── Contract/       # WASM, calls
 │   │   ├── Deploy/         # Builder, Signer
+│   │   ├── Events/         # SSE streaming
+│   │   ├── NFT/            # CEP-78 support
+│   │   ├── Storage/        # Secure key storage
 │   │   ├── Transfer/       # CSPR transfers
-│   │   └── ...
+│   │   └── Wallet/         # Multi-account
 │   ├── Utilities/
 │   │   └── Cryptography/   # Keys, hashing
-│   └── Examples/           # TestnetDemo
-└── Tests/                  # Unit tests
+│   └── Examples/           # TestnetDemo, WalletUI
+├── Samples/                # Sample components
+└── Tests/                  # 46 unit tests
 ```
 
 ---
