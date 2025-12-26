@@ -5,7 +5,7 @@
       "depth": 0,
       "source": "git",
       "dependencies": {},
-      "hash": "5340bdf8c28e66faa8a22461709fcf1166288247"
+      "hash": "d751ebe3589b56ec3f960d8f7e59384c8b9b03b0"
     },
     "com.unity.2d.animation": {
       "version": "12.0.2",
