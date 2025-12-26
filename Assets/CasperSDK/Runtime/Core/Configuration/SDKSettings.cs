@@ -26,6 +26,11 @@ namespace CasperSDK.Core.Configuration
         public const long DefaultTransferGas = 10000;
 
         /// <summary>
+        /// Default payment for CSPR transfers (0.1 CSPR = 100,000,000 motes)
+        /// </summary>
+        public const long DefaultTransferPayment = 100000000;
+
+        /// <summary>
         /// Minimum balance warning threshold (in motes)
         /// </summary>
         public const long MinBalanceWarningThreshold = 2500000000; // 2.5 CSPR
