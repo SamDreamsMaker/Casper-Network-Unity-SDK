@@ -61,7 +61,7 @@ namespace CasperSDK.Editor
             CreateDemoController(canvasGO);
             
             // Save scene
-            var scenePath = "Assets/CasperSDK/Samples/CasperWalletDemo.unity";
+            var scenePath = "Assets/CasperSDK/Samples/CasperWalletDemo/CasperWalletDemo.unity";
             EditorSceneManager.SaveScene(scene, scenePath);
             
             Debug.Log($"[CasperSDK] Demo scene created at: {scenePath}");
