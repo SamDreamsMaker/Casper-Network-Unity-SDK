@@ -19,6 +19,7 @@ namespace CasperSDK.Samples
     public class CasperWalletDemoController : MonoBehaviour
     {
         [Header("Configuration")]
+        [Tooltip("Optional: Create via Right-Click > Create > CasperSDK > Network Config. Leave empty for Testnet defaults.")]
         [SerializeField] private NetworkConfig _networkConfig;
 
         // UI References (found automatically)
