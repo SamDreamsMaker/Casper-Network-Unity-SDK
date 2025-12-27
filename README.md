@@ -40,19 +40,21 @@
 2. Click **+ → Add package from git URL**
 3. Enter:
 ```
-https://github.com/SamDreamsMaker/Casper-Network-Unity-SDK.git
+https://github.com/SamDreamsMaker/com.caspernetwork.sdk.git
 ```
 
-### Option 2: Manual Installation
+### Option 2: From Source Repo
 
-1. Download or clone this repository
-2. Copy the `Assets/CasperSDK` folder into your Unity project's `Assets/` directory
+For development or to access sample scenes:
+```
+https://github.com/SamDreamsMaker/Casper-Network-Unity-SDK.git?path=Assets/CasperSDK
+```
 
 ### Dependencies
 
 The SDK includes:
 - ✅ BouncyCastle.Crypto.dll (cryptography - included in Plugins/)
-- ✅ Newtonsoft.Json (via Unity Package Manager)
+- ✅ Newtonsoft.Json (auto-installed via UPM)
 
 ---
 

@@ -1,0 +1,58 @@
+name: Publish UPM Package
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'Assets/CasperSDK/**'
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+      - name: Get version from package.json
+        id: version
+        run: |
+          VERSION=$(cat Assets/CasperSDK/package.json | jq -r '.version')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Push to UPM repo
+        env:
+          UPM_REPO: github.com/SamDreamsMaker/com.caspernetwork.sdk.git
+          GH_TOKEN: ${{ secrets.UPM_DEPLOY_TOKEN }}
+        run: |
+          # Create temp directory
+          mkdir -p /tmp/upm-package
+          
+          # Copy package contents
+          cp -r Assets/CasperSDK/* /tmp/upm-package/
+          
+          # Initialize git in package folder
+          cd /tmp/upm-package
+          git init
+          git add .
+          git commit -m "Release v${{ steps.version.outputs.version }}"
+          
+          # Push to UPM repo
+          git remote add upm https://${GH_TOKEN}@${UPM_REPO}
+          git push upm HEAD:main --force
+          
+          # Create version tag
+          git tag v${{ steps.version.outputs.version }}
+          git push upm v${{ steps.version.outputs.version }} --force
+
+      - name: Summary
+        run: |
+          echo "## 📦 UPM Package Published" >> $GITHUB_STEP_SUMMARY
+          echo "Version: v${{ steps.version.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "Repo: https://github.com/SamDreamsMaker/com.caspernetwork.sdk" >> $GITHUB_STEP_SUMMARY
