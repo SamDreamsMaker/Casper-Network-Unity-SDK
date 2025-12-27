@@ -41,6 +41,10 @@ jobs:
                   rm -rf /tmp/upm-package/Tests
                   rm -f /tmp/upm-package/Tests.meta
 
+                  # Remove DemoSceneCreator (internal dev tool, causes errors if Samples not imported)
+                  rm -f /tmp/upm-package/Editor/DemoSceneCreator.cs
+                  rm -f /tmp/upm-package/Editor/DemoSceneCreator.cs.meta
+
                   # Rename Samples to Samples~ for UPM convention
                   # (hides samples from auto-import, makes them optional via Package Manager)
                   if [ -d "/tmp/upm-package/Samples" ]; then
