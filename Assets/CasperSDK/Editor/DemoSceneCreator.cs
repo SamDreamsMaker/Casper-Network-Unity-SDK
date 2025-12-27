@@ -24,7 +24,13 @@ namespace CasperSDK.Editor
             {
                 camera.backgroundColor = new Color(0.08f, 0.08f, 0.12f); // Dark blue-gray
                 camera.clearFlags = CameraClearFlags.SolidColor;
-                // Note: URP camera data warning is cosmetic, camera works fine
+                
+                // Add URP camera data if using Universal Render Pipeline
+                var urpCameraDataType = System.Type.GetType("UnityEngine.Rendering.Universal.UniversalAdditionalCameraData, Unity.RenderPipelines.Universal.Runtime");
+                if (urpCameraDataType != null && camera.GetComponent(urpCameraDataType) == null)
+                {
+                    camera.gameObject.AddComponent(urpCameraDataType);
+                }
             }
 
             // Create Canvas
