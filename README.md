@@ -62,10 +62,11 @@ The SDK includes:
 
 ### Demo Scene (Easiest Way)
 
-1. **Window → Casper SDK → Create Demo Scene**
-2. Play the generated `CasperWalletDemo` scene
-3. Click **Import Keys** to load your Casper Wallet PEM file
-4. Use the UI buttons for all operations
+1. **Package Manager → Casper Network SDK → Samples → Import "Casper Wallet Demo"**
+2. Open the imported `CasperWalletDemo` scene from `Assets/Samples/`
+3. Play the scene
+4. Click **Import Keys** to load your Casper Wallet PEM file
+5. Use the UI buttons for all operations
 
 ### Basic Usage
 
@@ -181,10 +182,11 @@ Right-click in Project → Create → CasperSDK → Network Config
 
 1. **Casper Wallet → Settings → Download Secret Key** → Save PEM
 2. Copy PEM to `Documents/CasperKeys/`
-3. In Unity: **Window → Casper SDK → Create Demo Scene**
-4. **Play** → Click **Import Keys** → Keys loaded
-5. **Refresh Balance** → See your CSPR
-6. Enter recipient + amount → **Send Transaction**
+3. **Package Manager → Casper Network SDK → Samples → Import**
+4. Open the `CasperWalletDemo` scene
+5. **Play** → Click **Import Keys** → Keys loaded
+6. **Refresh Balance** → See your CSPR
+7. Enter recipient + amount → **Send Transaction**
 
 ---
 
@@ -210,8 +212,8 @@ Assets/CasperSDK/
 │   ├── Utilities/
 │   │   └── Cryptography/   # Keys, hashing, PEM import/export
 │   └── Examples/           # TestnetDemo, BasicSDKExample
-├── Samples/                # CasperWalletDemo scene & controller
-└── Tests/                  # Unit tests (12 test files)
+├── Samples/                # CasperWalletDemo scene & controller (dev only)
+└── Tests/                  # Unit tests (excluded from UPM)
 ```
 
 ---
