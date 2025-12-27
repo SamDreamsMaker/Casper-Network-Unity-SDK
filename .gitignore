@@ -44,3 +44,7 @@ Thumbs.db
 # Unity Test Runner temp scenes
 InitTestScene*.unity
 InitTestScene*.unity.meta
+
+# User-specific NetworkConfig
+Assets/NetworkConfig.asset
+Assets/NetworkConfig.asset.meta
