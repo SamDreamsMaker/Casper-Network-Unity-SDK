@@ -81,7 +81,17 @@ namespace CasperSDK.Editor
             {
                 var eventSystem = new GameObject("EventSystem");
                 eventSystem.AddComponent<UnityEngine.EventSystems.EventSystem>();
-                eventSystem.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
+                
+                // Try to use new Input System UI module if available, otherwise fallback to legacy
+                var inputSystemType = System.Type.GetType("UnityEngine.InputSystem.UI.InputSystemUIInputModule, Unity.InputSystem");
+                if (inputSystemType != null)
+                {
+                    eventSystem.AddComponent(inputSystemType);
+                }
+                else
+                {
+                    eventSystem.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
+                }
             }
             
             return canvasGO;
