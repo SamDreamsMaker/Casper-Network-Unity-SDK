@@ -196,11 +196,14 @@ The SDK includes comprehensive unit and integration tests.
 
 Contributions are welcome! Please:
 
-1. Fork the repository
+1. **Fork the source repository** (not this package repo):
+   👉 https://github.com/SamDreamsMaker/Casper-Network-Unity-SDK
 2. Create a feature branch
 3. Follow the existing code style and patterns
 4. Add tests for new functionality
-5. Submit a pull request
+5. Submit a pull request to the **source repository**
+
+> ⚠️ **Note**: Do NOT submit PRs to `com.caspernetwork.sdk` - it's auto-generated from the source repo.
 
 ## 📄 Code Quality Standards
 
@@ -215,7 +218,7 @@ This SDK follows strict code quality standards:
 
 ## 📝 License
 
-[Add your license here]
+MIT License - see [LICENSE](https://github.com/SamDreamsMaker/Casper-Network-Unity-SDK/blob/main/LICENSE)
 
 ## 🔗 Links
 
@@ -226,8 +229,8 @@ This SDK follows strict code quality standards:
 ## 📧 Support
 
 For issues, questions, or contributions:
-- Open an issue on GitHub
-- Contact: [Your contact information]
+- Open an issue on [GitHub](https://github.com/SamDreamsMaker/Casper-Network-Unity-SDK/issues)
+- Contact: samdreamsmaker@gmail.com
 
 ## 🗺️ Roadmap
 
@@ -235,15 +238,21 @@ For issues, questions, or contributions:
 - [x] Network layer with JSON-RPC
 - [x] Account management
 - [x] Transaction builder
-- [ ] Transaction signing
+- [x] Transaction signing (ED25519 & SECP256K1)
+- [x] CSPR transfers
+- [x] Key import/export (PEM format)
 - [ ] Smart contract deployment
 - [ ] Smart contract interaction
-- [ ] Event listening
+- [ ] Event listening (SSE - in progress)
 - [ ] WebGL support optimization
-- [ ] Sample projects (Wallet, NFT, Token)
+- [ ] Sample projects (Wallet ✅, NFT, Token)
 
 ---
 
 **Version**: 1.0.0  
 **Last Updated**: December 2025  
-**Status**: In Development
+**Status**: Production Ready
+
+---
+
+**Source Repository**: https://github.com/SamDreamsMaker/Casper-Network-Unity-SDK
