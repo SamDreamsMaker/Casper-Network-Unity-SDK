@@ -23,7 +23,7 @@ namespace CasperSDK.Samples
 
         // UI References (found automatically)
         private TMP_Text _balanceValue;
-        private TMP_InputField _addressInput;
+        private TMP_Text _addressText;  // Changed from InputField to Text (read-only)
         private TMP_Text _transferStatus;
         private TMP_InputField _recipientInput;
         private TMP_InputField _amountInput;
@@ -60,9 +60,9 @@ namespace CasperSDK.Samples
             // Find text elements
             _balanceValue = FindComponentInChildren<TMP_Text>("BalanceValue");
             _transferStatus = FindComponentInChildren<TMP_Text>("TransferStatus");
+            _addressText = FindComponentInChildren<TMP_Text>("AddressText");
             
             // Find inputs
-            _addressInput = FindComponentInChildren<TMP_InputField>("AddressInput");
             _recipientInput = FindComponentInChildren<TMP_InputField>("RecipientInput");
             _amountInput = FindComponentInChildren<TMP_InputField>("AmountInput");
             
@@ -110,9 +110,6 @@ namespace CasperSDK.Samples
             _importBtn?.onClick.AddListener(ImportKeys);
             _faucetBtn?.onClick.AddListener(OpenFaucet);
             _sendBtn?.onClick.AddListener(SendTransaction);
-            
-            // When user finishes editing address, check balance
-            _addressInput?.onEndEdit.AddListener(OnAddressEntered);
         }
 
         #region Actions
@@ -129,20 +126,13 @@ namespace CasperSDK.Samples
 
         private async void RefreshBalance()
         {
-            var address = _addressInput?.text?.Trim();
-            
-            if (string.IsNullOrEmpty(address))
+            if (_currentKeyPair == null)
             {
-                if (_currentKeyPair != null)
-                {
-                    address = _currentKeyPair.PublicKeyHex;
-                }
-                else
-                {
-                    SetStatus("No address to check!", Color.yellow);
-                    return;
-                }
+                SetStatus("No account to check!", Color.yellow);
+                return;
             }
+            
+            var address = _currentKeyPair.PublicKeyHex;
 
             SetStatus("Fetching balance...", Color.white);
             
@@ -160,14 +150,7 @@ namespace CasperSDK.Samples
                 Debug.LogWarning($"[CasperDemo] Balance check: {ex.Message}");
             }
         }
-        
-        private void OnAddressEntered(string address)
-        {
-            if (!string.IsNullOrEmpty(address))
-            {
-                RefreshBalance();
-            }
-        }
+
 
         private void CopyAddress()
         {
@@ -323,9 +306,9 @@ namespace CasperSDK.Samples
 
         private void UpdateAddressDisplay()
         {
-            if (_addressInput != null && _currentKeyPair != null)
+            if (_addressText != null && _currentKeyPair != null)
             {
-                _addressInput.text = _currentKeyPair.PublicKeyHex;
+                _addressText.text = _currentKeyPair.PublicKeyHex;
             }
         }
 

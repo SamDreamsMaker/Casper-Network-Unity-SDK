@@ -220,12 +220,16 @@ namespace CasperSDK.Editor
             addressLayout.childControlWidth = true;
             addressLayout.childControlHeight = true;
             
-            var addressLabel = CreateTMPText("AddressLabel", addressContainer.transform, "Public Key (enter to check balance)", 14, new Color(0.5f, 0.5f, 0.6f));
+            var addressLabel = CreateTMPText("AddressLabel", addressContainer.transform, "Public Key", 14, new Color(0.5f, 0.5f, 0.6f));
             addressLabel.GetComponent<TMP_Text>().alignment = TextAlignmentOptions.Center;
             addressLabel.AddComponent<LayoutElement>().preferredHeight = 20;
             
-            // Input field for address - allows checking balance of any address
-            CreateInputField("AddressInput", addressContainer.transform, "01abc...or paste address", 35);
+            // Read-only text for address display (click Copy to use)
+            var addressText = CreateTMPText("AddressText", addressContainer.transform, "Generate or Import keys...", 14, new Color(0.8f, 0.8f, 0.9f));
+            addressText.GetComponent<TMP_Text>().alignment = TextAlignmentOptions.Center;
+            addressText.GetComponent<TMP_Text>().textWrappingMode = TextWrappingModes.NoWrap;
+            addressText.GetComponent<TMP_Text>().overflowMode = TextOverflowModes.Ellipsis;
+            addressText.AddComponent<LayoutElement>().preferredHeight = 30;
         }
 
         private static void CreateActionButtons(Transform parent)
