@@ -51,8 +51,8 @@ namespace CasperSDK.Samples
 
         private void Start()
         {
-            // Auto-generate an account on start
-            GenerateNewAccount();
+            // Don't auto-generate - let user choose to Generate or Import
+            SetStatus("Click Generate or Import to start", Color.white);
         }
 
         private void FindUIElements()
