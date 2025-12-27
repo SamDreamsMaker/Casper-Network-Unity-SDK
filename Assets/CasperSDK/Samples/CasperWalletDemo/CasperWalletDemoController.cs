@@ -197,16 +197,31 @@ namespace CasperSDK.Samples
         {
             try
             {
+                string pemPath = null;
+                
+                #if UNITY_EDITOR
+                // In Editor: use file picker dialog
+                pemPath = UnityEditor.EditorUtility.OpenFilePanel(
+                    "Select Casper Secret Key", 
+                    System.IO.Path.Combine(System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments), "CasperKeys"),
+                    "pem");
+                    
+                if (string.IsNullOrEmpty(pemPath))
+                {
+                    SetStatus("Import cancelled", Color.yellow);
+                    return;
+                }
+                #else
+                // In Build: auto-find in CasperKeys folder
                 var keysFolder = System.IO.Path.Combine(
                     System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments),
                     "CasperKeys");
 
-                // Look for any secret_key.pem file in the folder
                 if (!System.IO.Directory.Exists(keysFolder))
                 {
                     System.IO.Directory.CreateDirectory(keysFolder);
-                    SetStatus($"Put your secret_key.pem in Documents/CasperKeys", Color.yellow);
-                    #if UNITY_EDITOR || UNITY_STANDALONE_WIN
+                    SetStatus("Put your secret_key.pem in Documents/CasperKeys", Color.yellow);
+                    #if UNITY_STANDALONE_WIN
                     System.Diagnostics.Process.Start("explorer.exe", keysFolder);
                     #endif
                     return;
@@ -216,14 +231,15 @@ namespace CasperSDK.Samples
                 if (pemFiles.Length == 0)
                 {
                     SetStatus("No secret_key.pem found in Documents/CasperKeys", Color.yellow);
-                    #if UNITY_EDITOR || UNITY_STANDALONE_WIN
+                    #if UNITY_STANDALONE_WIN
                     System.Diagnostics.Process.Start("explorer.exe", keysFolder);
                     #endif
                     return;
                 }
+                
+                pemPath = pemFiles[0];
+                #endif
 
-                // Use the first PEM file found
-                var pemPath = pemFiles[0];
                 var pemContent = System.IO.File.ReadAllText(pemPath);
                 
                 // Detect algorithm from filename or content
