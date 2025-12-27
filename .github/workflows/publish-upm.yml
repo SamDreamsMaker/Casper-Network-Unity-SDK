@@ -5,6 +5,7 @@ on:
         branches: [main]
         paths:
             - "Assets/CasperSDK/**"
+            - ".github/workflows/publish-upm.yml"
 
 jobs:
     publish:
