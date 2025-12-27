@@ -32,6 +32,7 @@ namespace CasperSDK.Samples
         private Button _refreshBtn;
         private Button _copyBtn;
         private Button _exportBtn;
+        private Button _importBtn;
         private Button _faucetBtn;
         private Button _sendBtn;
 
@@ -70,6 +71,7 @@ namespace CasperSDK.Samples
             _refreshBtn = FindComponentInChildren<Button>("RefreshBtn");
             _copyBtn = FindComponentInChildren<Button>("CopyBtn");
             _exportBtn = FindComponentInChildren<Button>("ExportBtn");
+            _importBtn = FindComponentInChildren<Button>("ImportBtn");
             _faucetBtn = FindComponentInChildren<Button>("FaucetBtn");
             _sendBtn = FindComponentInChildren<Button>("SendBtn");
         }
@@ -105,6 +107,7 @@ namespace CasperSDK.Samples
             _refreshBtn?.onClick.AddListener(RefreshBalance);
             _copyBtn?.onClick.AddListener(CopyAddress);
             _exportBtn?.onClick.AddListener(ExportKeys);
+            _importBtn?.onClick.AddListener(ImportKeys);
             _faucetBtn?.onClick.AddListener(OpenFaucet);
             _sendBtn?.onClick.AddListener(SendTransaction);
             
@@ -205,6 +208,58 @@ namespace CasperSDK.Samples
         {
             Application.OpenURL("https://testnet.cspr.live/tools/faucet");
             SetStatus("Faucet opened. Paste your address there!", Color.cyan);
+        }
+
+        private void ImportKeys()
+        {
+            try
+            {
+                var keysFolder = System.IO.Path.Combine(
+                    System.Environment.GetFolderPath(System.Environment.SpecialFolder.MyDocuments),
+                    "CasperKeys");
+
+                // Look for any secret_key.pem file in the folder
+                if (!System.IO.Directory.Exists(keysFolder))
+                {
+                    System.IO.Directory.CreateDirectory(keysFolder);
+                    SetStatus($"Put your secret_key.pem in Documents/CasperKeys", Color.yellow);
+                    #if UNITY_EDITOR || UNITY_STANDALONE_WIN
+                    System.Diagnostics.Process.Start("explorer.exe", keysFolder);
+                    #endif
+                    return;
+                }
+
+                var pemFiles = System.IO.Directory.GetFiles(keysFolder, "*secret*.pem");
+                if (pemFiles.Length == 0)
+                {
+                    SetStatus("No secret_key.pem found in Documents/CasperKeys", Color.yellow);
+                    #if UNITY_EDITOR || UNITY_STANDALONE_WIN
+                    System.Diagnostics.Process.Start("explorer.exe", keysFolder);
+                    #endif
+                    return;
+                }
+
+                // Use the first PEM file found
+                var pemPath = pemFiles[0];
+                var pemContent = System.IO.File.ReadAllText(pemPath);
+                
+                // Detect algorithm from filename or content
+                var algorithm = pemPath.ToLower().Contains("secp") ? KeyAlgorithm.SECP256K1 : KeyAlgorithm.ED25519;
+                
+                _currentKeyPair = KeyExporter.ImportFromPem(pemContent, algorithm);
+                UpdateAddressDisplay();
+                SetStatus($"Imported: {System.IO.Path.GetFileName(pemPath)}", Color.green);
+                
+                Debug.Log($"[CasperDemo] Imported key: {_currentKeyPair.PublicKeyHex}");
+                
+                // Auto-refresh balance
+                RefreshBalance();
+            }
+            catch (Exception ex)
+            {
+                SetStatus($"Import failed: {ex.Message}", Color.red);
+                Debug.LogError($"[CasperDemo] Import error: {ex}");
+            }
         }
 
         private async void SendTransaction()

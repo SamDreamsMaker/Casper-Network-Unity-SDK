@@ -233,6 +233,7 @@ namespace CasperSDK.Editor
             
             // Buttons
             CreateButton("GenerateBtn", panel.transform, "Generate Account", new Color(0.3f, 0.5f, 0.9f), 45);
+            CreateButton("ImportBtn", panel.transform, "Import Keys", new Color(0.6f, 0.3f, 0.7f), 45);
             CreateButton("RefreshBtn", panel.transform, "Refresh Balance", new Color(0.2f, 0.6f, 0.8f), 45);
             CreateButton("CopyBtn", panel.transform, "Copy Address", new Color(0.4f, 0.4f, 0.5f), 45);
             CreateButton("ExportBtn", panel.transform, "Export Keys", new Color(0.5f, 0.4f, 0.7f), 45);

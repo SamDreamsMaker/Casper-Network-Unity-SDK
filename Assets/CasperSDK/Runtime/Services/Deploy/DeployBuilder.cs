@@ -183,7 +183,8 @@ namespace CasperSDK.Services.Deploy
         {
             Validate();
 
-            var timestamp = _timestamp ?? DateTime.UtcNow;
+            // Subtract 30 seconds to avoid "timestamp in future" errors from clock drift with nodes
+            var timestamp = (_timestamp ?? DateTime.UtcNow).AddSeconds(-30);
             var timestampStr = timestamp.ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
 
             // Calculate body hash
