@@ -225,13 +225,55 @@ namespace CasperSDK.Services.Transfer
                     args[i].Name,
                     new
                     {
-                        cl_type = args[i].Value.CLType,
+                        cl_type = FormatCLType(args[i].Value.CLType),
                         bytes = args[i].Value.Bytes,
                         parsed = args[i].Value.Parsed
                     }
                 };
             }
             return result;
+        }
+
+        /// <summary>
+        /// Formats CLType for RPC - complex types need object format
+        /// </summary>
+        private object FormatCLType(string clType)
+        {
+            if (string.IsNullOrEmpty(clType)) return "Unit";
+            
+            // Handle Option types: "Option(U64)" -> {"Option": "U64"}
+            if (clType.StartsWith("Option(") && clType.EndsWith(")"))
+            {
+                var innerType = clType.Substring(7, clType.Length - 8);
+                return new { Option = FormatCLType(innerType) };
+            }
+            
+            // Handle Option without inner type (None): "Option" -> {"Option": "Unit"}
+            if (clType == "Option")
+            {
+                return new { Option = "U64" }; // Default to U64 for transfer id
+            }
+            
+            // Handle List types: "List(U8)" -> {"List": "U8"}
+            if (clType.StartsWith("List(") && clType.EndsWith(")"))
+            {
+                var innerType = clType.Substring(5, clType.Length - 6);
+                return new { List = FormatCLType(innerType) };
+            }
+            
+            // Handle Map types: "Map(String,String)" -> {"Map": {"key": "String", "value": "String"}}
+            if (clType.StartsWith("Map(") && clType.EndsWith(")"))
+            {
+                var inner = clType.Substring(4, clType.Length - 5);
+                var parts = inner.Split(',');
+                if (parts.Length == 2)
+                {
+                    return new { Map = new { key = FormatCLType(parts[0].Trim()), value = FormatCLType(parts[1].Trim()) } };
+                }
+            }
+            
+            // Simple types: U8, U32, U64, U128, U256, U512, String, Bool, etc.
+            return clType;
         }
 
         private object[] FormatApprovals(DeployApproval[] approvals)

@@ -23,7 +23,7 @@ namespace CasperSDK.Samples
 
         // UI References (found automatically)
         private TMP_Text _balanceValue;
-        private TMP_Text _addressValue;
+        private TMP_InputField _addressInput;
         private TMP_Text _transferStatus;
         private TMP_InputField _recipientInput;
         private TMP_InputField _amountInput;
@@ -58,10 +58,10 @@ namespace CasperSDK.Samples
         {
             // Find text elements
             _balanceValue = FindComponentInChildren<TMP_Text>("BalanceValue");
-            _addressValue = FindComponentInChildren<TMP_Text>("AddressValue");
             _transferStatus = FindComponentInChildren<TMP_Text>("TransferStatus");
             
             // Find inputs
+            _addressInput = FindComponentInChildren<TMP_InputField>("AddressInput");
             _recipientInput = FindComponentInChildren<TMP_InputField>("RecipientInput");
             _amountInput = FindComponentInChildren<TMP_InputField>("AmountInput");
             
@@ -107,6 +107,9 @@ namespace CasperSDK.Samples
             _exportBtn?.onClick.AddListener(ExportKeys);
             _faucetBtn?.onClick.AddListener(OpenFaucet);
             _sendBtn?.onClick.AddListener(SendTransaction);
+            
+            // When user finishes editing address, check balance
+            _addressInput?.onEndEdit.AddListener(OnAddressEntered);
         }
 
         #region Actions
@@ -123,17 +126,26 @@ namespace CasperSDK.Samples
 
         private async void RefreshBalance()
         {
-            if (_currentKeyPair == null)
+            var address = _addressInput?.text?.Trim();
+            
+            if (string.IsNullOrEmpty(address))
             {
-                SetStatus("No account. Generate first!", Color.yellow);
-                return;
+                if (_currentKeyPair != null)
+                {
+                    address = _currentKeyPair.PublicKeyHex;
+                }
+                else
+                {
+                    SetStatus("No address to check!", Color.yellow);
+                    return;
+                }
             }
 
             SetStatus("Fetching balance...", Color.white);
             
             try
             {
-                var balance = await _accountService.GetBalanceAsync(_currentKeyPair.PublicKeyHex);
+                var balance = await _accountService.GetBalanceAsync(address);
                 var cspr = TransferService.MotesToCspr(balance);
                 SetBalance($"{cspr:N2}");
                 SetStatus($"Balance updated", Color.green);
@@ -143,6 +155,14 @@ namespace CasperSDK.Samples
                 SetBalance("0.00");
                 SetStatus($"Not found on chain (use faucet first)", Color.yellow);
                 Debug.LogWarning($"[CasperDemo] Balance check: {ex.Message}");
+            }
+        }
+        
+        private void OnAddressEntered(string address)
+        {
+            if (!string.IsNullOrEmpty(address))
+            {
+                RefreshBalance();
             }
         }
 
@@ -248,17 +268,9 @@ namespace CasperSDK.Samples
 
         private void UpdateAddressDisplay()
         {
-            if (_addressValue != null && _currentKeyPair != null)
+            if (_addressInput != null && _currentKeyPair != null)
             {
-                var key = _currentKeyPair.PublicKeyHex;
-                if (key.Length > 20)
-                {
-                    _addressValue.text = $"{key.Substring(0, 10)}...{key.Substring(key.Length - 8)}";
-                }
-                else
-                {
-                    _addressValue.text = key;
-                }
+                _addressInput.text = _currentKeyPair.PublicKeyHex;
             }
         }
 

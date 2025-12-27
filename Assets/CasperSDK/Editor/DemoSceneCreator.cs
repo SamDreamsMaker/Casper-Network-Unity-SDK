@@ -204,13 +204,12 @@ namespace CasperSDK.Editor
             addressLayout.childControlWidth = true;
             addressLayout.childControlHeight = true;
             
-            var addressLabel = CreateTMPText("AddressLabel", addressContainer.transform, "Public Key", 14, new Color(0.5f, 0.5f, 0.6f));
+            var addressLabel = CreateTMPText("AddressLabel", addressContainer.transform, "Public Key (enter to check balance)", 14, new Color(0.5f, 0.5f, 0.6f));
             addressLabel.GetComponent<TMP_Text>().alignment = TextAlignmentOptions.Center;
             addressLabel.AddComponent<LayoutElement>().preferredHeight = 20;
             
-            var addressValue = CreateTMPText("AddressValue", addressContainer.transform, "01abc...xyz", 16, Color.white);
-            addressValue.GetComponent<TMP_Text>().alignment = TextAlignmentOptions.Center;
-            addressValue.AddComponent<LayoutElement>().preferredHeight = 25;
+            // Input field for address - allows checking balance of any address
+            CreateInputField("AddressInput", addressContainer.transform, "01abc...or paste address", 35);
         }
 
         private static void CreateActionButtons(Transform parent)
@@ -282,12 +281,19 @@ namespace CasperSDK.Editor
 
         private static void CreateDemoController(GameObject canvas)
         {
-            // Create controller - will be added at runtime or manually
-            // Cannot add component from Editor assembly to Runtime script
             var controller = new GameObject("DemoController");
             
-            // Add a note for the user
-            Debug.Log("[CasperSDK] Add CasperWalletDemoController component manually to DemoController object");
+            // Use reflection to add the controller component (Editor can't directly reference Runtime scripts)
+            var controllerType = System.Type.GetType("CasperSDK.Samples.CasperWalletDemoController, Assembly-CSharp");
+            if (controllerType != null)
+            {
+                controller.AddComponent(controllerType);
+                Debug.Log("[CasperSDK] CasperWalletDemoController added successfully");
+            }
+            else
+            {
+                Debug.LogWarning("[CasperSDK] Add CasperWalletDemoController component manually to DemoController");
+            }
         }
 
         private static GameObject CreatePanel(string name, Transform parent, Color color)

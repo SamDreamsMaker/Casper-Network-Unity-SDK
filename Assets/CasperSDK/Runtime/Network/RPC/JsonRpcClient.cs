@@ -118,11 +118,16 @@ namespace CasperSDK.Network.RPC
 
         private async Task<TResult> SendRequestInternalAsync<TResult>(JsonRpcRequest request, int attemptNumber)
         {
-            string jsonRequest = JsonConvert.SerializeObject(request);
+            string jsonRequest = JsonConvert.SerializeObject(request, Formatting.Indented);
             
             if (_enableLogging && attemptNumber == 0)
             {
                 Debug.Log($"[CasperSDK] RPC: {request.method} -> {_endpoint}");
+                // Log full request for debugging
+                if (request.method == "account_put_deploy")
+                {
+                    Debug.Log($"[CasperSDK] Full request payload:\n{jsonRequest}");
+                }
             }
 
             using (var webRequest = new UnityWebRequest(_endpoint, "POST"))
