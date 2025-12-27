@@ -229,15 +229,32 @@ namespace CasperSDK.Utilities.Cryptography
             // Get the curve - could be from the key's parameters or default to secp256k1
             var curve = ECNamedCurveTable.GetByName("secp256k1");
             var publicKeyPoint = curve.G.Multiply(ecPrivate.D);
-            var publicKeyBytes = publicKeyPoint.GetEncoded(true); // Compressed format
+            var compressedPoint = publicKeyPoint.GetEncoded(true); // EC compressed: 02/03 + 32 bytes X = 33 bytes
+            
+            // Casper SECP256K1 public key format (from docs):
+            // 02 (1 byte Casper algo tag) + 33 bytes EC compressed point = 34 bytes = 68 hex chars
+            var publicKeyHex = CasperKeyConstants.SECP256K1_PREFIX + CryptoHelper.BytesToHex(compressedPoint);
+            
+            Debug.Log($"[CasperSDK] SECP256K1 imported - public key: {publicKeyHex} (length: {publicKeyHex.Length})");
 
             return new KeyPair
             {
                 PrivateKeyHex = CryptoHelper.BytesToHex(ecPrivate.D.ToByteArrayUnsigned()),
-                PublicKeyHex = "02" + CryptoHelper.BytesToHex(publicKeyBytes),
+                PublicKeyHex = publicKeyHex,
                 Algorithm = KeyAlgorithm.SECP256K1,
-                AccountHash = CryptoHelper.GenerateAccountHash("02" + CryptoHelper.BytesToHex(publicKeyBytes))
+                AccountHash = CryptoHelper.GenerateAccountHash(publicKeyHex)
             };
+        }
+        
+        /// <summary>
+        /// Constants for Casper key prefixes (from Casper network specification)
+        /// </summary>
+        private static class CasperKeyConstants
+        {
+            /// <summary>ED25519 algorithm prefix (1 byte)</summary>
+            public const string ED25519_PREFIX = "01";
+            /// <summary>SECP256K1 algorithm prefix (1 byte)</summary>
+            public const string SECP256K1_PREFIX = "02";
         }
 
         #endregion
