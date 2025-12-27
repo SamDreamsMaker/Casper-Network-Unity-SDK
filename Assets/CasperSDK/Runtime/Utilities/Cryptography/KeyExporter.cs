@@ -12,7 +12,7 @@ using Org.BouncyCastle.Security;
 namespace CasperSDK.Utilities.Cryptography
 {
     /// <summary>
-    /// Exports and imports keys in PEM format for compatibility with Casper Signer.
+    /// Exports and imports keys in PEM format for compatibility with Casper Wallet.
     /// </summary>
     public static class KeyExporter
     {
@@ -84,8 +84,8 @@ namespace CasperSDK.Utilities.Cryptography
         }
 
         /// <summary>
-        /// Exports key pair to Casper Signer compatible format (secret_key.pem)
-        /// This is the format used by casper-client and Casper Signer
+        /// Exports key pair to Casper Wallet compatible format (secret_key.pem)
+        /// This is the format used by casper-client and Casper Wallet
         /// </summary>
         public static string ExportForCasperSigner(KeyPair keyPair)
         {
@@ -170,7 +170,7 @@ namespace CasperSDK.Utilities.Cryptography
 
         /// <summary>
         /// Imports a key pair from PEM string
-        /// Supports formats from Casper Wallet, Casper Signer, and casper-client
+        /// Supports formats from Casper Wallet and casper-client
         /// </summary>
         public static KeyPair ImportFromPem(string pemContent, KeyAlgorithm algorithm = KeyAlgorithm.ED25519)
         {

@@ -58,12 +58,12 @@ The SDK includes:
 
 ## 🚀 Quick Start
 
-### TestnetDemo (Easiest Way)
+### Demo Scene (Easiest Way)
 
-1. Create an empty GameObject
-2. Add `TestnetDemo` component
-3. Play → Account generated automatically
-4. Use context menu (right-click) for all operations
+1. **Window → Casper SDK → Create Demo Scene**
+2. Play the generated `CasperWalletDemo` scene
+3. Click **Import Keys** to load your Casper Wallet PEM file
+4. Use the UI buttons for all operations
 
 ### Basic Usage
 
@@ -91,7 +91,7 @@ var result = await transferService.TransferAsync(
 // Import PEM file exported from Casper Wallet
 var keyPair = KeyExporter.ImportFromPemFile("path/to/secret_key.pem");
 
-// Export for Casper Signer
+// Export for Casper Wallet
 KeyExporter.ExportToPemFiles(keyPair, "output/path");
 ```
 
@@ -163,27 +163,26 @@ Right-click in Project → Create → CasperSDK → Network Config
 
 ## 🎯 Examples
 
-### TestnetDemo Features
+### CasperWalletDemo UI
 
-| Context Menu | Action |
-|--------------|--------|
-| Generate New Account | Create ED25519 key pair |
-| Check Balance | Query CSPR balance |
-| Prepare Test Transfer | Build & sign (no send) |
-| Execute Transfer | Send real CSPR |
-| Export Keys to PEM | For Casper Wallet/Signer |
-| Import Keys from PEM | Load existing keys |
-| Open Testnet Faucet | Get free testnet CSPR |
-| Open Block Explorer | View on cspr.live |
+| Button | Action |
+|--------|--------|
+| Generate Account | Create new ED25519 key pair |
+| Import Keys | Load PEM from Documents/CasperKeys |
+| Refresh Balance | Query CSPR balance |
+| Copy Address | Copy public key to clipboard |
+| Export Keys | Save PEM to Documents/CasperKeys |
+| Open Faucet | Get free testnet CSPR |
+| Send Transaction | Transfer CSPR to recipient |
 
 ### Workflow for Testing
 
-1. **Play** → Account generated
-2. **Export Keys to PEM** → Opens folder
-3. **Import in Casper Wallet** → Upload .pem file
-4. **Faucet** → Request testnet CSPR
-5. **Check Balance** → See 1000 CSPR
-6. **Execute Transfer** → Send to another account
+1. **Casper Wallet → Settings → Download Secret Key** → Save PEM
+2. Copy PEM to `Documents/CasperKeys/`
+3. In Unity: **Window → Casper SDK → Create Demo Scene**
+4. **Play** → Click **Import Keys** → Keys loaded
+5. **Refresh Balance** → See your CSPR
+6. Enter recipient + amount → **Send Transaction**
 
 ---
 
@@ -191,7 +190,7 @@ Right-click in Project → Create → CasperSDK → Network Config
 
 ```
 Assets/CasperSDK/
-├── Editor/                 # Settings window
+├── Editor/                 # Settings window, DemoSceneCreator
 ├── Plugins/                # BouncyCastle.Crypto.dll
 ├── Runtime/
 │   ├── Core/               # Configuration, Interfaces
@@ -200,17 +199,17 @@ Assets/CasperSDK/
 │   ├── Services/
 │   │   ├── Account/        # Balance, keys
 │   │   ├── Contract/       # WASM, calls
-│   │   ├── Deploy/         # Builder, Signer
+│   │   ├── Deploy/         # Builder, Signer, CLValueBuilder
 │   │   ├── Events/         # SSE streaming
 │   │   ├── NFT/            # CEP-78 support
 │   │   ├── Storage/        # Secure key storage
 │   │   ├── Transfer/       # CSPR transfers
 │   │   └── Wallet/         # Multi-account
 │   ├── Utilities/
-│   │   └── Cryptography/   # Keys, hashing
-│   └── Examples/           # TestnetDemo, WalletUI
-├── Samples/                # Sample components
-└── Tests/                  # 46 unit tests
+│   │   └── Cryptography/   # Keys, hashing, PEM import/export
+│   └── Examples/           # TestnetDemo, BasicSDKExample
+├── Samples/                # CasperWalletDemo scene & controller
+└── Tests/                  # Unit tests (12 test files)
 ```
 
 ---

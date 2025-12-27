@@ -286,7 +286,7 @@ namespace CasperSDK.Examples
             }
         }
 
-        [ContextMenu("Export Keys to PEM (for Casper Signer)")]
+        [ContextMenu("Export Keys to PEM (for Casper Wallet)")]
         public void ExportKeysToPem()
         {
             if (_keyPair == null)
@@ -302,16 +302,16 @@ namespace CasperSDK.Examples
             KeyExporter.ExportToPemFiles(_keyPair, exportPath, "casper_testnet");
 
             Debug.Log("\n==============================================");
-            Debug.Log("   KEYS EXPORTED FOR CASPER SIGNER");
+            Debug.Log("   KEYS EXPORTED FOR CASPER WALLET");
             Debug.Log("==============================================");
             Debug.Log($"Location: {exportPath}");
             Debug.Log("");
-            Debug.Log("To use with Casper Signer:");
-            Debug.Log("1. Install Casper Signer extension in your browser");
-            Debug.Log("2. Open Casper Signer → Import Account");
+            Debug.Log("To use with Casper Wallet:");
+            Debug.Log("1. Install Casper Wallet extension in your browser");
+            Debug.Log("2. Open Casper Wallet → Import Account");
             Debug.Log("3. Select 'Upload Keys' and choose 'casper_testnet_secret_key.pem'");
             Debug.Log("4. Go to https://testnet.cspr.live/tools/faucet");
-            Debug.Log("5. Connect with Casper Signer and request CSPR");
+            Debug.Log("5. Connect with Casper Wallet and request CSPR");
             Debug.Log("==============================================\n");
 
             // Open the folder
