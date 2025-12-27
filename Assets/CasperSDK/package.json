@@ -23,5 +23,12 @@
     "repository": {
         "type": "git",
         "url": "https://github.com/SamDreamsMaker/com.caspernetwork.sdk.git"
-    }
+    },
+    "samples": [
+        {
+            "displayName": "Casper Wallet Demo",
+            "description": "Complete demo scene with wallet UI, transfers, and key import/export",
+            "path": "Samples~/CasperWalletDemo"
+        }
+    ]
 }
