@@ -15,7 +15,7 @@ A comprehensive Unity SDK for integrating [Casper Network](https://casper.networ
 
 ## 📋 Requirements
 
-- Unity 2021.3 LTS or higher
+- Unity 2022.3 LTS or higher
 - .NET Standard 2.1 or higher
 - Windows, macOS, Linux, WebGL, iOS, Android support
 
